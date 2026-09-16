@@ -2995,6 +2995,7 @@
               "priority",
               "delivery",
               "delivery_line",
+              "delivery_related",
               "sales_order",
               "location",
               "location_type",
@@ -3074,11 +3075,14 @@
               "map",
               "purchase_order",
               "purchase_order_line",
+              "purchase_order_related",
               "supplier",
-              "supplier_summary",
               "receivable_entry",
               "receiving_order",
               "receiving_order_line",
+              "receiving_order_totals",
+              "receiving_order_stage_total",
+              "receiving_order_related",
               "email_contact",
               "allocation_entry",
               "open_credit_entry",
@@ -3120,6 +3124,11 @@
               "user_photo_url",
               "batch_lot",
               "check_duplicate_result",
+              "item_costs",
+              "item_trends",
+              "reconciled_item_result",
+              "skipped_item_result",
+              "reconcile_error_result",
               "item_trend_point",
               "tenancy_pending_registration",
               "invoice_allocation_entry",
@@ -6994,6 +7003,7 @@
               "priority",
               "delivery",
               "delivery_line",
+              "delivery_related",
               "sales_order",
               "location",
               "location_type",
@@ -7073,11 +7083,14 @@
               "map",
               "purchase_order",
               "purchase_order_line",
+              "purchase_order_related",
               "supplier",
-              "supplier_summary",
               "receivable_entry",
               "receiving_order",
               "receiving_order_line",
+              "receiving_order_totals",
+              "receiving_order_stage_total",
+              "receiving_order_related",
               "email_contact",
               "allocation_entry",
               "open_credit_entry",
@@ -7119,6 +7132,11 @@
               "user_photo_url",
               "batch_lot",
               "check_duplicate_result",
+              "item_costs",
+              "item_trends",
+              "reconciled_item_result",
+              "skipped_item_result",
+              "reconcile_error_result",
               "item_trend_point",
               "tenancy_pending_registration",
               "invoice_allocation_entry",
@@ -7322,7 +7340,8 @@
           "metadata": {
             "description": "Arbitrary JSON metadata for the mutation (e.g. reason, source, tags). Encoded as a JSON value (object, array, string, number, boolean, or null), not a JSON-encoded string.",
             "nullable": true,
-            "type": "object"
+            "type": "object",
+            "x-expandable": true
           },
           "request": {
             "allOf": [
@@ -7744,10 +7763,62 @@
             },
             "data": [
               {
-                "item_id": "it_pej07ckhvu62",
-                "sku": "ALM-2024-1001",
-                "previous_quantity": "10",
-                "new_quantity": "12"
+                "object": "reconciled_item_result",
+                "item": {
+                  "id": "it_pej07ckhvu62",
+                  "object": "entity",
+                  "type": "item",
+                  "name": "ALM-2024-1001",
+                  "handle": null
+                },
+                "previous_quantity": {
+                  "object": "computed_quantity",
+                  "value": "1200",
+                  "display_value": "1,200 kg",
+                  "unit": {
+                    "id": "un_82bd37dae5po",
+                    "object": "unit",
+                    "name": "Kilogram",
+                    "abbreviation": "kg",
+                    "type": "mass",
+                    "ratio_numerator": "1000",
+                    "ratio_denominator": "1",
+                    "offset_numerator": "0",
+                    "offset_denominator": "1",
+                    "is_base_unit": false,
+                    "owner": {
+                      "object": "owner",
+                      "type": "system",
+                      "account": null
+                    },
+                    "created_at": "2026-05-10T00:00:00Z",
+                    "updated_at": "2026-05-10T00:23:00Z"
+                  }
+                },
+                "new_quantity": {
+                  "object": "computed_quantity",
+                  "value": "1200",
+                  "display_value": "1,200 kg",
+                  "unit": {
+                    "id": "un_82bd37dae5po",
+                    "object": "unit",
+                    "name": "Kilogram",
+                    "abbreviation": "kg",
+                    "type": "mass",
+                    "ratio_numerator": "1000",
+                    "ratio_denominator": "1",
+                    "offset_numerator": "0",
+                    "offset_denominator": "1",
+                    "is_base_unit": false,
+                    "owner": {
+                      "object": "owner",
+                      "type": "system",
+                      "account": null
+                    },
+                    "created_at": "2026-05-10T00:00:00Z",
+                    "updated_at": "2026-05-10T00:23:00Z"
+                  }
+                }
               }
             ]
           },
@@ -8508,7 +8579,25 @@
           "object": "computed_quantity",
           "value": "1200",
           "display_value": "1,200 kg",
-          "unit": null
+          "unit": {
+            "id": "un_82bd37dae5po",
+            "object": "unit",
+            "name": "Kilogram",
+            "abbreviation": "kg",
+            "type": "mass",
+            "ratio_numerator": "1000",
+            "ratio_denominator": "1",
+            "offset_numerator": "0",
+            "offset_denominator": "1",
+            "is_base_unit": false,
+            "owner": {
+              "object": "owner",
+              "type": "system",
+              "account": null
+            },
+            "created_at": "2026-05-10T00:00:00Z",
+            "updated_at": "2026-05-10T00:23:00Z"
+          }
         },
         "properties": {
           "object": {
@@ -8533,7 +8622,7 @@
                 "$ref": "#/components/schemas/Unit"
               }
             ],
-            "description": "Unit of measure for this value.",
+            "description": "Unit of measure for this value.\n\nResolved in full rather than expandable: a computed quantity is not a stored row a caller could fetch on its own, so the unit it is counted in travels with it. Null only where the figure was derived without a unit record behind it.",
             "example": {
               "id": "un_82bd37dae5po",
               "object": "unit",
@@ -8553,8 +8642,7 @@
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
             },
-            "nullable": true,
-            "x-expandable": true
+            "nullable": true
           }
         },
         "required": [
@@ -11562,6 +11650,7 @@
               "priority",
               "delivery",
               "delivery_line",
+              "delivery_related",
               "sales_order",
               "location",
               "location_type",
@@ -11641,11 +11730,14 @@
               "map",
               "purchase_order",
               "purchase_order_line",
+              "purchase_order_related",
               "supplier",
-              "supplier_summary",
               "receivable_entry",
               "receiving_order",
               "receiving_order_line",
+              "receiving_order_totals",
+              "receiving_order_stage_total",
+              "receiving_order_related",
               "email_contact",
               "allocation_entry",
               "open_credit_entry",
@@ -11687,6 +11779,11 @@
               "user_photo_url",
               "batch_lot",
               "check_duplicate_result",
+              "item_costs",
+              "item_trends",
+              "reconciled_item_result",
+              "skipped_item_result",
+              "reconcile_error_result",
               "item_trend_point",
               "tenancy_pending_registration",
               "invoice_allocation_entry",
@@ -12973,7 +13070,7 @@
             "type": "integer"
           },
           "run_hours": {
-            "description": "Machine hours the campaign will take.\n\nLeft unset, it is estimated from the rate this version was solved with for this item, so the week's utilisation still reflects the added work. An item the version holds no policy for estimates to zero.",
+            "description": "Machine hours the campaign will take.\n\nLeft unset, it is estimated from the rate this version was solved with for this item, so the week's utilization still reflects the added work. An item the version holds no policy for estimates to zero.",
             "type": "number"
           },
           "reason": {
@@ -17960,6 +18057,7 @@
               "priority",
               "delivery",
               "delivery_line",
+              "delivery_related",
               "sales_order",
               "location",
               "location_type",
@@ -18039,11 +18137,14 @@
               "map",
               "purchase_order",
               "purchase_order_line",
+              "purchase_order_related",
               "supplier",
-              "supplier_summary",
               "receivable_entry",
               "receiving_order",
               "receiving_order_line",
+              "receiving_order_totals",
+              "receiving_order_stage_total",
+              "receiving_order_related",
               "email_contact",
               "allocation_entry",
               "open_credit_entry",
@@ -18085,6 +18186,11 @@
               "user_photo_url",
               "batch_lot",
               "check_duplicate_result",
+              "item_costs",
+              "item_trends",
+              "reconciled_item_result",
+              "skipped_item_result",
+              "reconcile_error_result",
               "item_trend_point",
               "tenancy_pending_registration",
               "invoice_allocation_entry",
@@ -18736,7 +18842,7 @@
             "type": "string"
           },
           "name": {
-            "description": "Human-readable label for the version, such as the week it was cut for.\n\nPurely for recognising the version in a list; versions are numbered automatically and the number is what identifies them.",
+            "description": "Human-readable label for the version, such as the week it was cut for.\n\nPurely for recognizing the version in a list; versions are numbered automatically and the number is what identifies them.",
             "type": "string"
           }
         },
@@ -20704,25 +20810,97 @@
             "object": "computed_quantity",
             "value": "1200",
             "display_value": "1,200 kg",
-            "unit": null
+            "unit": {
+              "id": "un_82bd37dae5po",
+              "object": "unit",
+              "name": "Kilogram",
+              "abbreviation": "kg",
+              "type": "mass",
+              "ratio_numerator": "1000",
+              "ratio_denominator": "1",
+              "offset_numerator": "0",
+              "offset_denominator": "1",
+              "is_base_unit": false,
+              "owner": {
+                "object": "owner",
+                "type": "system",
+                "account": null
+              },
+              "created_at": "2026-05-10T00:00:00Z",
+              "updated_at": "2026-05-10T00:23:00Z"
+            }
           },
           "reserved": {
             "object": "computed_quantity",
             "value": "1200",
             "display_value": "1,200 kg",
-            "unit": null
+            "unit": {
+              "id": "un_82bd37dae5po",
+              "object": "unit",
+              "name": "Kilogram",
+              "abbreviation": "kg",
+              "type": "mass",
+              "ratio_numerator": "1000",
+              "ratio_denominator": "1",
+              "offset_numerator": "0",
+              "offset_denominator": "1",
+              "is_base_unit": false,
+              "owner": {
+                "object": "owner",
+                "type": "system",
+                "account": null
+              },
+              "created_at": "2026-05-10T00:00:00Z",
+              "updated_at": "2026-05-10T00:23:00Z"
+            }
           },
           "available_to_promise": {
             "object": "computed_quantity",
             "value": "1200",
             "display_value": "1,200 kg",
-            "unit": null
+            "unit": {
+              "id": "un_82bd37dae5po",
+              "object": "unit",
+              "name": "Kilogram",
+              "abbreviation": "kg",
+              "type": "mass",
+              "ratio_numerator": "1000",
+              "ratio_denominator": "1",
+              "offset_numerator": "0",
+              "offset_denominator": "1",
+              "is_base_unit": false,
+              "owner": {
+                "object": "owner",
+                "type": "system",
+                "account": null
+              },
+              "created_at": "2026-05-10T00:00:00Z",
+              "updated_at": "2026-05-10T00:23:00Z"
+            }
           },
           "short": {
             "object": "computed_quantity",
             "value": "1200",
             "display_value": "1,200 kg",
-            "unit": null
+            "unit": {
+              "id": "un_82bd37dae5po",
+              "object": "unit",
+              "name": "Kilogram",
+              "abbreviation": "kg",
+              "type": "mass",
+              "ratio_numerator": "1000",
+              "ratio_denominator": "1",
+              "offset_numerator": "0",
+              "offset_denominator": "1",
+              "is_base_unit": false,
+              "owner": {
+                "object": "owner",
+                "type": "system",
+                "account": null
+              },
+              "created_at": "2026-05-10T00:00:00Z",
+              "updated_at": "2026-05-10T00:23:00Z"
+            }
           }
         },
         "properties": {
@@ -20744,7 +20922,25 @@
               "object": "computed_quantity",
               "value": "1200",
               "display_value": "1,200 kg",
-              "unit": null
+              "unit": {
+                "id": "un_82bd37dae5po",
+                "object": "unit",
+                "name": "Kilogram",
+                "abbreviation": "kg",
+                "type": "mass",
+                "ratio_numerator": "1000",
+                "ratio_denominator": "1",
+                "offset_numerator": "0",
+                "offset_denominator": "1",
+                "is_base_unit": false,
+                "owner": {
+                  "object": "owner",
+                  "type": "system",
+                  "account": null
+                },
+                "created_at": "2026-05-10T00:00:00Z",
+                "updated_at": "2026-05-10T00:23:00Z"
+              }
             },
             "nullable": true,
             "x-expandable": true
@@ -20760,7 +20956,25 @@
               "object": "computed_quantity",
               "value": "1200",
               "display_value": "1,200 kg",
-              "unit": null
+              "unit": {
+                "id": "un_82bd37dae5po",
+                "object": "unit",
+                "name": "Kilogram",
+                "abbreviation": "kg",
+                "type": "mass",
+                "ratio_numerator": "1000",
+                "ratio_denominator": "1",
+                "offset_numerator": "0",
+                "offset_denominator": "1",
+                "is_base_unit": false,
+                "owner": {
+                  "object": "owner",
+                  "type": "system",
+                  "account": null
+                },
+                "created_at": "2026-05-10T00:00:00Z",
+                "updated_at": "2026-05-10T00:23:00Z"
+              }
             },
             "nullable": true,
             "x-expandable": true
@@ -20776,7 +20990,25 @@
               "object": "computed_quantity",
               "value": "1200",
               "display_value": "1,200 kg",
-              "unit": null
+              "unit": {
+                "id": "un_82bd37dae5po",
+                "object": "unit",
+                "name": "Kilogram",
+                "abbreviation": "kg",
+                "type": "mass",
+                "ratio_numerator": "1000",
+                "ratio_denominator": "1",
+                "offset_numerator": "0",
+                "offset_denominator": "1",
+                "is_base_unit": false,
+                "owner": {
+                  "object": "owner",
+                  "type": "system",
+                  "account": null
+                },
+                "created_at": "2026-05-10T00:00:00Z",
+                "updated_at": "2026-05-10T00:23:00Z"
+              }
             },
             "nullable": true,
             "x-expandable": true
@@ -20792,7 +21024,25 @@
               "object": "computed_quantity",
               "value": "1200",
               "display_value": "1,200 kg",
-              "unit": null
+              "unit": {
+                "id": "un_82bd37dae5po",
+                "object": "unit",
+                "name": "Kilogram",
+                "abbreviation": "kg",
+                "type": "mass",
+                "ratio_numerator": "1000",
+                "ratio_denominator": "1",
+                "offset_numerator": "0",
+                "offset_denominator": "1",
+                "is_base_unit": false,
+                "owner": {
+                  "object": "owner",
+                  "type": "system",
+                  "account": null
+                },
+                "created_at": "2026-05-10T00:00:00Z",
+                "updated_at": "2026-05-10T00:23:00Z"
+              }
             },
             "nullable": true,
             "x-expandable": true
@@ -21148,6 +21398,7 @@
               "priority",
               "delivery",
               "delivery_line",
+              "delivery_related",
               "sales_order",
               "location",
               "location_type",
@@ -21227,11 +21478,14 @@
               "map",
               "purchase_order",
               "purchase_order_line",
+              "purchase_order_related",
               "supplier",
-              "supplier_summary",
               "receivable_entry",
               "receiving_order",
               "receiving_order_line",
+              "receiving_order_totals",
+              "receiving_order_stage_total",
+              "receiving_order_related",
               "email_contact",
               "allocation_entry",
               "open_credit_entry",
@@ -21273,6 +21527,11 @@
               "user_photo_url",
               "batch_lot",
               "check_duplicate_result",
+              "item_costs",
+              "item_trends",
+              "reconciled_item_result",
+              "skipped_item_result",
+              "reconcile_error_result",
               "item_trend_point",
               "tenancy_pending_registration",
               "invoice_allocation_entry",
@@ -30480,6 +30739,7 @@
                 "priority",
                 "delivery",
                 "delivery_line",
+                "delivery_related",
                 "sales_order",
                 "location",
                 "location_type",
@@ -30559,11 +30819,14 @@
                 "map",
                 "purchase_order",
                 "purchase_order_line",
+                "purchase_order_related",
                 "supplier",
-                "supplier_summary",
                 "receivable_entry",
                 "receiving_order",
                 "receiving_order_line",
+                "receiving_order_totals",
+                "receiving_order_stage_total",
+                "receiving_order_related",
                 "email_contact",
                 "allocation_entry",
                 "open_credit_entry",
@@ -30605,6 +30868,11 @@
                 "user_photo_url",
                 "batch_lot",
                 "check_duplicate_result",
+                "item_costs",
+                "item_trends",
+                "reconciled_item_result",
+                "skipped_item_result",
+                "reconcile_error_result",
                 "item_trend_point",
                 "tenancy_pending_registration",
                 "invoice_allocation_entry",
@@ -47314,7 +47582,7 @@
             "type": "number"
           },
           "measurement_status": {
-            "description": "Whether availability was measured from logged downtime or estimated from runtime. A department with no logged downtime computes as perfectly available, so an estimate is labelled rather than presented as a measurement.",
+            "description": "Whether availability was measured from logged downtime or estimated from runtime. A department with no logged downtime computes as perfectly available, so an estimate is labeled rather than presented as a measurement.",
             "enum": [
               "measured",
               "estimated"
@@ -60245,7 +60513,7 @@
             "type": "number"
           },
           "planned_changeover_minutes": {
-            "description": "Modelled changeover time before the campaign.",
+            "description": "Modeled changeover time before the campaign.",
             "type": "number"
           },
           "sequence_index": {
@@ -61061,7 +61329,7 @@
             "type": "number"
           },
           "changeover_avg_minutes": {
-            "description": "Typical changeover duration.\n\nChangeover time is modelled as rising with the number of new inputs a product introduces, between the minimum and maximum below. The slope is calibrated from production history so the model reproduces this average across the transitions actually observed, which is why the value belongs at the changeover time the floor typically reports rather than at a worst case.",
+            "description": "Typical changeover duration.\n\nChangeover time is modeled as rising with the number of new inputs a product introduces, between the minimum and maximum below. The slope is calibrated from production history so the model reproduces this average across the transitions actually observed, which is why the value belongs at the changeover time the floor typically reports rather than at a worst case.",
             "type": "number"
           },
           "changeover_min_minutes": {
@@ -65430,9 +65698,28 @@
       "ReconcileErrorResult": {
         "description": "A submitted row that could not be reconciled.",
         "properties": {
-          "sku": {
-            "description": "Item SKU.",
+          "object": {
+            "description": "Resource type identifier.",
+            "enum": [
+              "reconcile_error_result"
+            ],
             "type": "string"
+          },
+          "item": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Entity"
+              }
+            ],
+            "description": "The item the row named, named by id and SKU.\n\nAlways set: a row whose SKU matched no item is reported under `skipped_items` rather than here.",
+            "example": {
+              "id": "us_43irtlt2ajz6",
+              "object": "entity",
+              "type": "user",
+              "name": "John Doe",
+              "handle": "jdoe@openmrp.ai"
+            },
+            "nullable": true
           },
           "error": {
             "description": "Error message.",
@@ -65440,36 +65727,108 @@
           }
         },
         "required": [
-          "sku",
+          "object",
+          "item",
           "error"
         ],
         "type": "object"
       },
       "ReconciledItemResult": {
-        "description": "An item whose on-hand quantity was successfully reconciled.\n\nBoth quantities are expressed in the item's own base unit, not in the unit submitted with the request.",
+        "description": "An item whose on-hand quantity was successfully reconciled.\n\nBoth quantities are expressed in the item's own base unit, not in the unit submitted with the request, and both arrive with that unit resolved.",
         "properties": {
-          "item_id": {
-            "description": "Item ID.",
+          "object": {
+            "description": "Resource type identifier.",
+            "enum": [
+              "reconciled_item_result"
+            ],
             "type": "string"
           },
-          "sku": {
-            "description": "Item SKU.",
-            "type": "string"
+          "item": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Entity"
+              }
+            ],
+            "description": "The item that was reconciled, named by id and SKU.",
+            "example": {
+              "id": "us_43irtlt2ajz6",
+              "object": "entity",
+              "type": "user",
+              "name": "John Doe",
+              "handle": "jdoe@openmrp.ai"
+            },
+            "nullable": true
           },
           "previous_quantity": {
-            "description": "Quantity before the reconciliation, as a decimal string.",
-            "format": "decimal",
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ComputedQuantity"
+              }
+            ],
+            "description": "Quantity before the reconciliation.",
+            "example": {
+              "object": "computed_quantity",
+              "value": "1200",
+              "display_value": "1,200 kg",
+              "unit": {
+                "id": "un_82bd37dae5po",
+                "object": "unit",
+                "name": "Kilogram",
+                "abbreviation": "kg",
+                "type": "mass",
+                "ratio_numerator": "1000",
+                "ratio_denominator": "1",
+                "offset_numerator": "0",
+                "offset_denominator": "1",
+                "is_base_unit": false,
+                "owner": {
+                  "object": "owner",
+                  "type": "system",
+                  "account": null
+                },
+                "created_at": "2026-05-10T00:00:00Z",
+                "updated_at": "2026-05-10T00:23:00Z"
+              }
+            },
+            "nullable": true
           },
           "new_quantity": {
-            "description": "Quantity after the reconciliation, as a decimal string.",
-            "format": "decimal",
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ComputedQuantity"
+              }
+            ],
+            "description": "Quantity after the reconciliation.",
+            "example": {
+              "object": "computed_quantity",
+              "value": "1200",
+              "display_value": "1,200 kg",
+              "unit": {
+                "id": "un_82bd37dae5po",
+                "object": "unit",
+                "name": "Kilogram",
+                "abbreviation": "kg",
+                "type": "mass",
+                "ratio_numerator": "1000",
+                "ratio_denominator": "1",
+                "offset_numerator": "0",
+                "offset_denominator": "1",
+                "is_base_unit": false,
+                "owner": {
+                  "object": "owner",
+                  "type": "system",
+                  "account": null
+                },
+                "created_at": "2026-05-10T00:00:00Z",
+                "updated_at": "2026-05-10T00:23:00Z"
+              }
+            },
+            "nullable": true
           }
         },
         "required": [
-          "item_id",
-          "sku",
+          "object",
+          "item",
           "previous_quantity",
           "new_quantity"
         ],
@@ -74526,7 +74885,7 @@
             "type": "integer"
           },
           "changeover_slope_minutes": {
-            "description": "Minutes of changeover the model adds for each new input a product transition introduces.\n\nCalibrated from measured production against `average_inputs_added`, so the modelled changeover lands on the time the floor actually reports rather than on a fixed allowance.",
+            "description": "Minutes of changeover the model adds for each new input a product transition introduces.\n\nCalibrated from measured production against `average_inputs_added`, so the modeled changeover lands on the time the floor actually reports rather than on a fixed allowance.",
             "type": "number"
           },
           "average_inputs_added": {
@@ -74736,7 +75095,7 @@
             "type": "array"
           },
           "items_without_run_rate": {
-            "description": "Finished goods with no measured finishing rate, which cannot be levelled because the hours they cost are unknown.",
+            "description": "Finished goods with no measured finishing rate, which cannot be leveled because the hours they cost are unknown.",
             "items": {
               "type": "string"
             },
@@ -75412,6 +75771,7 @@
               "priority",
               "delivery",
               "delivery_line",
+              "delivery_related",
               "sales_order",
               "location",
               "location_type",
@@ -75491,11 +75851,14 @@
               "map",
               "purchase_order",
               "purchase_order_line",
+              "purchase_order_related",
               "supplier",
-              "supplier_summary",
               "receivable_entry",
               "receiving_order",
               "receiving_order_line",
+              "receiving_order_totals",
+              "receiving_order_stage_total",
+              "receiving_order_related",
               "email_contact",
               "allocation_entry",
               "open_credit_entry",
@@ -75537,6 +75900,11 @@
               "user_photo_url",
               "batch_lot",
               "check_duplicate_result",
+              "item_costs",
+              "item_trends",
+              "reconciled_item_result",
+              "skipped_item_result",
+              "reconcile_error_result",
               "item_trend_point",
               "tenancy_pending_registration",
               "invoice_allocation_entry",
@@ -75808,6 +76176,7 @@
               "priority",
               "delivery",
               "delivery_line",
+              "delivery_related",
               "sales_order",
               "location",
               "location_type",
@@ -75887,11 +76256,14 @@
               "map",
               "purchase_order",
               "purchase_order_line",
+              "purchase_order_related",
               "supplier",
-              "supplier_summary",
               "receivable_entry",
               "receiving_order",
               "receiving_order_line",
+              "receiving_order_totals",
+              "receiving_order_stage_total",
+              "receiving_order_related",
               "email_contact",
               "allocation_entry",
               "open_credit_entry",
@@ -75933,6 +76305,11 @@
               "user_photo_url",
               "batch_lot",
               "check_duplicate_result",
+              "item_costs",
+              "item_trends",
+              "reconciled_item_result",
+              "skipped_item_result",
+              "reconcile_error_result",
               "item_trend_point",
               "tenancy_pending_registration",
               "invoice_allocation_entry",
@@ -76401,10 +76778,17 @@
         "type": "object"
       },
       "SkippedItemResult": {
-        "description": "A submitted row that was skipped rather than reconciled.",
+        "description": "A submitted row that was skipped rather than reconciled.\n\nA skipped row is reported by the SKU it was submitted under rather than as an item reference, because the usual reason to skip one is that no item carries that SKU — there is nothing to point at.",
         "properties": {
+          "object": {
+            "description": "Resource type identifier.",
+            "enum": [
+              "skipped_item_result"
+            ],
+            "type": "string"
+          },
           "sku": {
-            "description": "Item SKU.",
+            "description": "Item SKU, as submitted.",
             "type": "string"
           },
           "reason": {
@@ -76413,6 +76797,7 @@
           }
         },
         "required": [
+          "object",
           "sku",
           "reason"
         ],
@@ -78715,7 +79100,7 @@
             "type": "number"
           },
           "changeover_avg_minutes": {
-            "description": "Typical changeover duration.\n\nChangeover time is modelled as rising with the number of new inputs a product introduces, between the minimum and maximum below. The slope is calibrated from production history so the model reproduces this average across the transitions actually observed; set it to the changeover time the floor typically reports rather than to a worst case.",
+            "description": "Typical changeover duration.\n\nChangeover time is modeled as rising with the number of new inputs a product introduces, between the minimum and maximum below. The slope is calibrated from production history so the model reproduces this average across the transitions actually observed; set it to the changeover time the floor typically reports rather than to a worst case.",
             "type": "number"
           },
           "changeover_min_minutes": {
@@ -79745,7 +80130,7 @@
                 "$ref": "#/components/schemas/RateInput"
               }
             ],
-            "description": "Cost per unit. Same unit rule and omission behaviour as `unit_price`."
+            "description": "Cost per unit. Same unit rule and omission behavior as `unit_price`."
           },
           "properties": {
             "default": "[]",
@@ -86841,10 +87226,62 @@
                     },
                     "data": [
                       {
-                        "item_id": "it_pej07ckhvu62",
-                        "sku": "ALM-2024-1001",
-                        "previous_quantity": "10",
-                        "new_quantity": "12"
+                        "object": "reconciled_item_result",
+                        "item": {
+                          "id": "it_pej07ckhvu62",
+                          "object": "entity",
+                          "type": "item",
+                          "name": "ALM-2024-1001",
+                          "handle": null
+                        },
+                        "previous_quantity": {
+                          "object": "computed_quantity",
+                          "value": "1200",
+                          "display_value": "1,200 kg",
+                          "unit": {
+                            "id": "un_82bd37dae5po",
+                            "object": "unit",
+                            "name": "Kilogram",
+                            "abbreviation": "kg",
+                            "type": "mass",
+                            "ratio_numerator": "1000",
+                            "ratio_denominator": "1",
+                            "offset_numerator": "0",
+                            "offset_denominator": "1",
+                            "is_base_unit": false,
+                            "owner": {
+                              "object": "owner",
+                              "type": "system",
+                              "account": null
+                            },
+                            "created_at": "2026-05-10T00:00:00Z",
+                            "updated_at": "2026-05-10T00:23:00Z"
+                          }
+                        },
+                        "new_quantity": {
+                          "object": "computed_quantity",
+                          "value": "1200",
+                          "display_value": "1,200 kg",
+                          "unit": {
+                            "id": "un_82bd37dae5po",
+                            "object": "unit",
+                            "name": "Kilogram",
+                            "abbreviation": "kg",
+                            "type": "mass",
+                            "ratio_numerator": "1000",
+                            "ratio_denominator": "1",
+                            "offset_numerator": "0",
+                            "offset_denominator": "1",
+                            "is_base_unit": false,
+                            "owner": {
+                              "object": "owner",
+                              "type": "system",
+                              "account": null
+                            },
+                            "created_at": "2026-05-10T00:00:00Z",
+                            "updated_at": "2026-05-10T00:23:00Z"
+                          }
+                        }
                       }
                     ]
                   },
@@ -88484,25 +88921,97 @@
                     "object": "computed_quantity",
                     "value": "1200",
                     "display_value": "1,200 kg",
-                    "unit": null
+                    "unit": {
+                      "id": "un_82bd37dae5po",
+                      "object": "unit",
+                      "name": "Kilogram",
+                      "abbreviation": "kg",
+                      "type": "mass",
+                      "ratio_numerator": "1000",
+                      "ratio_denominator": "1",
+                      "offset_numerator": "0",
+                      "offset_denominator": "1",
+                      "is_base_unit": false,
+                      "owner": {
+                        "object": "owner",
+                        "type": "system",
+                        "account": null
+                      },
+                      "created_at": "2026-05-10T00:00:00Z",
+                      "updated_at": "2026-05-10T00:23:00Z"
+                    }
                   },
                   "reserved": {
                     "object": "computed_quantity",
                     "value": "1200",
                     "display_value": "1,200 kg",
-                    "unit": null
+                    "unit": {
+                      "id": "un_82bd37dae5po",
+                      "object": "unit",
+                      "name": "Kilogram",
+                      "abbreviation": "kg",
+                      "type": "mass",
+                      "ratio_numerator": "1000",
+                      "ratio_denominator": "1",
+                      "offset_numerator": "0",
+                      "offset_denominator": "1",
+                      "is_base_unit": false,
+                      "owner": {
+                        "object": "owner",
+                        "type": "system",
+                        "account": null
+                      },
+                      "created_at": "2026-05-10T00:00:00Z",
+                      "updated_at": "2026-05-10T00:23:00Z"
+                    }
                   },
                   "available_to_promise": {
                     "object": "computed_quantity",
                     "value": "1200",
                     "display_value": "1,200 kg",
-                    "unit": null
+                    "unit": {
+                      "id": "un_82bd37dae5po",
+                      "object": "unit",
+                      "name": "Kilogram",
+                      "abbreviation": "kg",
+                      "type": "mass",
+                      "ratio_numerator": "1000",
+                      "ratio_denominator": "1",
+                      "offset_numerator": "0",
+                      "offset_denominator": "1",
+                      "is_base_unit": false,
+                      "owner": {
+                        "object": "owner",
+                        "type": "system",
+                        "account": null
+                      },
+                      "created_at": "2026-05-10T00:00:00Z",
+                      "updated_at": "2026-05-10T00:23:00Z"
+                    }
                   },
                   "short": {
                     "object": "computed_quantity",
                     "value": "1200",
                     "display_value": "1,200 kg",
-                    "unit": null
+                    "unit": {
+                      "id": "un_82bd37dae5po",
+                      "object": "unit",
+                      "name": "Kilogram",
+                      "abbreviation": "kg",
+                      "type": "mass",
+                      "ratio_numerator": "1000",
+                      "ratio_denominator": "1",
+                      "offset_numerator": "0",
+                      "offset_denominator": "1",
+                      "is_base_unit": false,
+                      "owner": {
+                        "object": "owner",
+                        "type": "system",
+                        "account": null
+                      },
+                      "created_at": "2026-05-10T00:00:00Z",
+                      "updated_at": "2026-05-10T00:23:00Z"
+                    }
                   }
                 },
                 "schema": {
@@ -101273,6 +101782,7 @@
                   "priority",
                   "delivery",
                   "delivery_line",
+                  "delivery_related",
                   "sales_order",
                   "location",
                   "location_type",
@@ -101352,11 +101862,14 @@
                   "map",
                   "purchase_order",
                   "purchase_order_line",
+                  "purchase_order_related",
                   "supplier",
-                  "supplier_summary",
                   "receivable_entry",
                   "receiving_order",
                   "receiving_order_line",
+                  "receiving_order_totals",
+                  "receiving_order_stage_total",
+                  "receiving_order_related",
                   "email_contact",
                   "allocation_entry",
                   "open_credit_entry",
@@ -101398,6 +101911,11 @@
                   "user_photo_url",
                   "batch_lot",
                   "check_duplicate_result",
+                  "item_costs",
+                  "item_trends",
+                  "reconciled_item_result",
+                  "skipped_item_result",
+                  "reconcile_error_result",
                   "item_trend_point",
                   "tenancy_pending_registration",
                   "invoice_allocation_entry",
@@ -101609,6 +102127,7 @@
                 "priority",
                 "delivery",
                 "delivery_line",
+                "delivery_related",
                 "sales_order",
                 "location",
                 "location_type",
@@ -101688,11 +102207,14 @@
                 "map",
                 "purchase_order",
                 "purchase_order_line",
+                "purchase_order_related",
                 "supplier",
-                "supplier_summary",
                 "receivable_entry",
                 "receiving_order",
                 "receiving_order_line",
+                "receiving_order_totals",
+                "receiving_order_stage_total",
+                "receiving_order_related",
                 "email_contact",
                 "allocation_entry",
                 "open_credit_entry",
@@ -101734,6 +102256,11 @@
                 "user_photo_url",
                 "batch_lot",
                 "check_duplicate_result",
+                "item_costs",
+                "item_trends",
+                "reconciled_item_result",
+                "skipped_item_result",
+                "reconcile_error_result",
                 "item_trend_point",
                 "tenancy_pending_registration",
                 "invoice_allocation_entry",
@@ -104322,6 +104849,7 @@
                   "priority",
                   "delivery",
                   "delivery_line",
+                  "delivery_related",
                   "sales_order",
                   "location",
                   "location_type",
@@ -104401,11 +104929,14 @@
                   "map",
                   "purchase_order",
                   "purchase_order_line",
+                  "purchase_order_related",
                   "supplier",
-                  "supplier_summary",
                   "receivable_entry",
                   "receiving_order",
                   "receiving_order_line",
+                  "receiving_order_totals",
+                  "receiving_order_stage_total",
+                  "receiving_order_related",
                   "email_contact",
                   "allocation_entry",
                   "open_credit_entry",
@@ -104447,6 +104978,11 @@
                   "user_photo_url",
                   "batch_lot",
                   "check_duplicate_result",
+                  "item_costs",
+                  "item_trends",
+                  "reconciled_item_result",
+                  "skipped_item_result",
+                  "reconcile_error_result",
                   "item_trend_point",
                   "tenancy_pending_registration",
                   "invoice_allocation_entry",
@@ -108180,6 +108716,7 @@
                 "priority",
                 "delivery",
                 "delivery_line",
+                "delivery_related",
                 "sales_order",
                 "location",
                 "location_type",
@@ -108259,11 +108796,14 @@
                 "map",
                 "purchase_order",
                 "purchase_order_line",
+                "purchase_order_related",
                 "supplier",
-                "supplier_summary",
                 "receivable_entry",
                 "receiving_order",
                 "receiving_order_line",
+                "receiving_order_totals",
+                "receiving_order_stage_total",
+                "receiving_order_related",
                 "email_contact",
                 "allocation_entry",
                 "open_credit_entry",
@@ -108305,6 +108845,11 @@
                 "user_photo_url",
                 "batch_lot",
                 "check_duplicate_result",
+                "item_costs",
+                "item_trends",
+                "reconciled_item_result",
+                "skipped_item_result",
+                "reconcile_error_result",
                 "item_trend_point",
                 "tenancy_pending_registration",
                 "invoice_allocation_entry",
@@ -132278,9 +132823,7 @@
                 "enum": [
                   "sales_order_line",
                   "sales_order_line.product",
-                  "quantity",
                   "quantity.unit",
-                  "ordered_quantity",
                   "ordered_quantity.unit"
                 ],
                 "type": "string"
@@ -139826,7 +140369,7 @@
     },
     "/v1/operations/production-schedules/{id}/finishing-lines": {
       "get": {
-        "description": "Returns the second stage of a schedule: how many of which finished good to make from the knitted parts, week by week.\n\nThe constraint plan says how much greige to knit and deliberately does not say what to turn it into — a family's demand is pooled onto the greige precisely so the buffer can sit at the undifferentiated stage, where it is cheapest. These lines are where that pooling is undone, against each finished SKU's own stock position, its own orders, and the hours the rest of the factory has that week.\n\nLevelled, not merely allocated. Work that does not fit a week moves to the next one rather than being dropped, so the plan never asks the second stage for more hours than it has. Two things bound it, and they are reported separately in the schedule's diagnostics because they call for opposite responses: a SKU held back for want of greige is a knitting problem, and a SKU held back for want of hours is a finishing one.\n\nEverything is counted in the constraint item's unit, so `greige_consumed` here and `planned_quantity` on the constraint plan are directly comparable — which is what lets the two stages be reconciled rather than only read side by side.\n\nThis endpoint requires the permission: `production_schedules:read`.",
+        "description": "Returns the second stage of a schedule: how many of which finished good to make from the knitted parts, week by week.\n\nThe constraint plan says how much greige to knit and deliberately does not say what to turn it into — a family's demand is pooled onto the greige precisely so the buffer can sit at the undifferentiated stage, where it is cheapest. These lines are where that pooling is undone, against each finished SKU's own stock position, its own orders, and the hours the rest of the factory has that week.\n\nLeveled, not merely allocated. Work that does not fit a week moves to the next one rather than being dropped, so the plan never asks the second stage for more hours than it has. Two things bound it, and they are reported separately in the schedule's diagnostics because they call for opposite responses: a SKU held back for want of greige is a knitting problem, and a SKU held back for want of hours is a finishing one.\n\nEverything is counted in the constraint item's unit, so `greige_consumed` here and `planned_quantity` on the constraint plan are directly comparable — which is what lets the two stages be reconciled rather than only read side by side.\n\nThis endpoint requires the permission: `production_schedules:read`.",
         "operationId": "list-production-schedule-finishing-lines",
         "parameters": [
           {
