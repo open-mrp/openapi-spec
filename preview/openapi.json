@@ -81335,7 +81335,7 @@
   "info": {
     "description": "API for OpenMRP services",
     "title": "OpenMRP API",
-    "version": "1.0.forge-preview.4"
+    "version": "1.0.forge-preview.5"
   },
   "openapi": "3.0.0",
   "paths": {
@@ -100646,7 +100646,7 @@
     },
     "/v1/catalog/units/{id}": {
       "delete": {
-        "description": "Deletes a unit owned by your account.\n\nThe unit is also removed from every unit group it belongs to. System units, which are shared across all accounts, cannot be deleted.\n\nThis endpoint requires the permission: `units:delete`.",
+        "description": "Deletes a unit owned by your account.\n\nThe unit is also removed from every unit group it belongs to. System units, which are shared across all accounts, cannot be deleted, and neither can a unit that is a unit group's base unit — change the group's base unit or delete the group first — or one that any quantity or price is recorded in.\n\nThis endpoint requires the permission: `units:delete`.",
         "operationId": "delete-unit",
         "parameters": [
           {
@@ -101614,7 +101614,7 @@
             }
           },
           {
-            "description": "Restricts results to audit events on or after this timestamp.",
+            "description": "Restricts results to audit events on or after this timestamp.\n\nDefaults to 24 hours before `ends_at`, or before now when `ends_at` is also omitted, unless `resource_ids` or the root resource is given — a record's history is returned whole. Pass an earlier timestamp to search further back.",
             "example": "2026-05-10T00:00:00Z",
             "in": "query",
             "name": "starts_at",
@@ -103665,7 +103665,7 @@
             }
           },
           {
-            "description": "Restricts results to request logs on or after this timestamp.",
+            "description": "Restricts results to request logs on or after this timestamp.\n\nDefaults to 24 hours before `ends_at`, or before now when `ends_at` is also omitted. Pass an earlier timestamp to search further back.",
             "example": "2026-05-10T00:00:00Z",
             "in": "query",
             "name": "starts_at",
@@ -119671,7 +119671,7 @@
             }
           },
           {
-            "description": "Restricts results to change logs created on or after this timestamp.",
+            "description": "Restricts results to change logs created on or after this timestamp.\n\nDefaults to 90 days before `ends_at`, or before now when `ends_at` is also omitted, unless `item_ids` is given — an item's history is returned whole. Pass an earlier timestamp to search further back.",
             "example": "2026-05-10T00:00:00Z",
             "in": "query",
             "name": "starts_at",
