@@ -6149,7 +6149,8 @@
               "agent.run_completed",
               "agent.alert",
               "system.broadcast",
-              "customer.registered"
+              "customer.registered",
+              "production_run.updated"
             ],
             "type": "string"
           },
@@ -46997,7 +46998,8 @@
               "agent.run_completed",
               "agent.alert",
               "system.broadcast",
-              "customer.registered"
+              "customer.registered",
+              "production_run.updated"
             ],
             "type": "string"
           },
@@ -47182,6 +47184,7 @@
               "agent.alert",
               "system.broadcast",
               "customer.registered",
+              "production_run.updated",
               null
             ],
             "nullable": true,
@@ -76003,7 +76006,8 @@
               "agent.run_completed",
               "agent.alert",
               "system.broadcast",
-              "customer.registered"
+              "customer.registered",
+              "production_run.updated"
             ],
             "type": "string"
           },
@@ -116019,7 +116023,8 @@
                 "agent.run_completed",
                 "agent.alert",
                 "system.broadcast",
-                "customer.registered"
+                "customer.registered",
+                "production_run.updated"
               ],
               "type": "string"
             }
