@@ -3125,6 +3125,7 @@
               "user_photo_upload_result",
               "user_photo_url",
               "batch_lot",
+              "production_run_batch_summary",
               "check_duplicate_result",
               "item_costs",
               "item_trends",
@@ -7136,6 +7137,7 @@
               "user_photo_upload_result",
               "user_photo_url",
               "batch_lot",
+              "production_run_batch_summary",
               "check_duplicate_result",
               "item_costs",
               "item_trends",
@@ -11785,6 +11787,7 @@
               "user_photo_upload_result",
               "user_photo_url",
               "batch_lot",
+              "production_run_batch_summary",
               "check_duplicate_result",
               "item_costs",
               "item_trends",
@@ -18194,6 +18197,7 @@
               "user_photo_upload_result",
               "user_photo_url",
               "batch_lot",
+              "production_run_batch_summary",
               "check_duplicate_result",
               "item_costs",
               "item_trends",
@@ -21537,6 +21541,7 @@
               "user_photo_upload_result",
               "user_photo_url",
               "batch_lot",
+              "production_run_batch_summary",
               "check_duplicate_result",
               "item_costs",
               "item_trends",
@@ -30880,6 +30885,7 @@
                 "user_photo_upload_result",
                 "user_photo_url",
                 "batch_lot",
+                "production_run_batch_summary",
                 "check_duplicate_result",
                 "item_costs",
                 "item_trends",
@@ -35791,6 +35797,72 @@
             "description": "Resources in this page.",
             "items": {
               "$ref": "#/components/schemas/ProductLine"
+            },
+            "type": "array",
+            "x-stainless-pagination-property": {
+              "purpose": "items"
+            }
+          }
+        },
+        "required": [
+          "object",
+          "page_info",
+          "data"
+        ],
+        "type": "object"
+      },
+      "List_ProductionRunBatchSummary": {
+        "description": "A single page of resources, together with the metadata needed to page through the rest of the result set.",
+        "example": {
+          "object": "list",
+          "page_info": {
+            "next_page_url": null,
+            "previous_page_url": null,
+            "has_next_page": false,
+            "has_prev_page": false
+          },
+          "data": [
+            {
+              "object": "production_run_batch_summary",
+              "item": {
+                "id": "it_pej07ckhvu62",
+                "object": "entity",
+                "type": "item",
+                "name": "ALM-2024-1001",
+                "handle": null
+              },
+              "unit": {
+                "id": "un_82bd37dae5po",
+                "object": "entity",
+                "type": "unit",
+                "name": "ea",
+                "handle": null
+              },
+              "quantity_value": "300",
+              "batch_count": 3
+            }
+          ]
+        },
+        "properties": {
+          "object": {
+            "description": "Resource type identifier.",
+            "enum": [
+              "list"
+            ],
+            "type": "string"
+          },
+          "page_info": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageInfo"
+              }
+            ],
+            "description": "Pagination metadata."
+          },
+          "data": {
+            "description": "Resources in this page.",
+            "items": {
+              "$ref": "#/components/schemas/ProductionRunBatchSummary"
             },
             "type": "array",
             "x-stainless-pagination-property": {
@@ -58172,6 +58244,36 @@
             "updated_at": "2026-05-10T00:23:00Z"
           },
           "batch_count": 3,
+          "batch_summaries": {
+            "object": "list",
+            "page_info": {
+              "next_page_url": null,
+              "previous_page_url": null,
+              "has_next_page": false,
+              "has_prev_page": false
+            },
+            "data": [
+              {
+                "object": "production_run_batch_summary",
+                "item": {
+                  "id": "it_pej07ckhvu62",
+                  "object": "entity",
+                  "type": "item",
+                  "name": "ALM-2024-1001",
+                  "handle": null
+                },
+                "unit": {
+                  "id": "un_82bd37dae5po",
+                  "object": "entity",
+                  "type": "unit",
+                  "name": "ea",
+                  "handle": null
+                },
+                "quantity_value": "300",
+                "batch_count": 3
+              }
+            ]
+          },
           "started_at": "2026-05-10T00:23:00Z",
           "completed_at": null,
           "created_at": "2026-05-10T00:00:00Z",
@@ -58341,6 +58443,45 @@
             "description": "Number of batches currently recorded against this run.",
             "type": "integer"
           },
+          "batch_summaries": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/List_ProductionRunBatchSummary"
+              }
+            ],
+            "description": "The run's batches totalled per item and unit, ordered by SKU.",
+            "example": {
+              "object": "list",
+              "page_info": {
+                "next_page_url": null,
+                "previous_page_url": null,
+                "has_next_page": false,
+                "has_prev_page": false
+              },
+              "data": [
+                {
+                  "object": "production_run_batch_summary",
+                  "item": {
+                    "id": "it_pej07ckhvu62",
+                    "object": "entity",
+                    "type": "item",
+                    "name": "ALM-2024-1001",
+                    "handle": null
+                  },
+                  "unit": {
+                    "id": "un_82bd37dae5po",
+                    "object": "entity",
+                    "type": "unit",
+                    "name": "ea",
+                    "handle": null
+                  },
+                  "quantity_value": "300",
+                  "batch_count": 3
+                }
+              ]
+            },
+            "nullable": true
+          },
           "started_at": {
             "description": "Time the run started production.\n\nSet automatically the first time a batch in the run is scanned at a station.",
             "format": "date-time",
@@ -58370,10 +58511,91 @@
           "number",
           "responsible_user",
           "batch_count",
+          "batch_summaries",
           "started_at",
           "completed_at",
           "created_at",
           "updated_at"
+        ],
+        "type": "object"
+      },
+      "ProductionRunBatchSummary": {
+        "description": "The batches of one item, counted in one unit, that a production run holds.",
+        "example": {
+          "object": "production_run_batch_summary",
+          "item": {
+            "id": "it_pej07ckhvu62",
+            "object": "entity",
+            "type": "item",
+            "name": "ALM-2024-1001",
+            "handle": null
+          },
+          "unit": {
+            "id": "un_82bd37dae5po",
+            "object": "entity",
+            "type": "unit",
+            "name": "ea",
+            "handle": null
+          },
+          "quantity_value": "300",
+          "batch_count": 3
+        },
+        "properties": {
+          "object": {
+            "description": "Resource type identifier.",
+            "enum": [
+              "production_run_batch_summary"
+            ],
+            "type": "string"
+          },
+          "item": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Entity"
+              }
+            ],
+            "description": "The item the batches produce, named by its SKU.",
+            "example": {
+              "id": "us_43irtlt2ajz6",
+              "object": "entity",
+              "type": "user",
+              "name": "John Doe",
+              "handle": "jdoe@openmrp.ai"
+            },
+            "nullable": true
+          },
+          "unit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Entity"
+              }
+            ],
+            "description": "The unit the quantity is counted in, named by its abbreviation.",
+            "example": {
+              "id": "us_43irtlt2ajz6",
+              "object": "entity",
+              "type": "user",
+              "name": "John Doe",
+              "handle": "jdoe@openmrp.ai"
+            },
+            "nullable": true
+          },
+          "quantity_value": {
+            "description": "Total quantity of the batches, as a decimal string.",
+            "format": "decimal",
+            "type": "string"
+          },
+          "batch_count": {
+            "description": "Number of batches in the total.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "object",
+          "item",
+          "unit",
+          "quantity_value",
+          "batch_count"
         ],
         "type": "object"
       },
@@ -66355,6 +66577,36 @@
               "updated_at": "2026-05-10T00:23:00Z"
             },
             "batch_count": 3,
+            "batch_summaries": {
+              "object": "list",
+              "page_info": {
+                "next_page_url": null,
+                "previous_page_url": null,
+                "has_next_page": false,
+                "has_prev_page": false
+              },
+              "data": [
+                {
+                  "object": "production_run_batch_summary",
+                  "item": {
+                    "id": "it_pej07ckhvu62",
+                    "object": "entity",
+                    "type": "item",
+                    "name": "ALM-2024-1001",
+                    "handle": null
+                  },
+                  "unit": {
+                    "id": "un_82bd37dae5po",
+                    "object": "entity",
+                    "type": "unit",
+                    "name": "ea",
+                    "handle": null
+                  },
+                  "quantity_value": "300",
+                  "batch_count": 3
+                }
+              ]
+            },
             "started_at": "2026-05-10T00:23:00Z",
             "completed_at": null,
             "created_at": "2026-05-10T00:00:00Z",
@@ -66591,6 +66843,36 @@
                 "updated_at": "2026-05-10T00:23:00Z"
               },
               "batch_count": 3,
+              "batch_summaries": {
+                "object": "list",
+                "page_info": {
+                  "next_page_url": null,
+                  "previous_page_url": null,
+                  "has_next_page": false,
+                  "has_prev_page": false
+                },
+                "data": [
+                  {
+                    "object": "production_run_batch_summary",
+                    "item": {
+                      "id": "it_pej07ckhvu62",
+                      "object": "entity",
+                      "type": "item",
+                      "name": "ALM-2024-1001",
+                      "handle": null
+                    },
+                    "unit": {
+                      "id": "un_82bd37dae5po",
+                      "object": "entity",
+                      "type": "unit",
+                      "name": "ea",
+                      "handle": null
+                    },
+                    "quantity_value": "300",
+                    "batch_count": 3
+                  }
+                ]
+              },
               "started_at": "2026-05-10T00:23:00Z",
               "completed_at": null,
               "created_at": "2026-05-10T00:00:00Z",
@@ -75916,6 +76198,7 @@
               "user_photo_upload_result",
               "user_photo_url",
               "batch_lot",
+              "production_run_batch_summary",
               "check_duplicate_result",
               "item_costs",
               "item_trends",
@@ -76324,6 +76607,7 @@
               "user_photo_upload_result",
               "user_photo_url",
               "batch_lot",
+              "production_run_batch_summary",
               "check_duplicate_result",
               "item_costs",
               "item_trends",
@@ -101932,6 +102216,7 @@
                   "user_photo_upload_result",
                   "user_photo_url",
                   "batch_lot",
+                  "production_run_batch_summary",
                   "check_duplicate_result",
                   "item_costs",
                   "item_trends",
@@ -102279,6 +102564,7 @@
                 "user_photo_upload_result",
                 "user_photo_url",
                 "batch_lot",
+                "production_run_batch_summary",
                 "check_duplicate_result",
                 "item_costs",
                 "item_trends",
@@ -105003,6 +105289,7 @@
                   "user_photo_upload_result",
                   "user_photo_url",
                   "batch_lot",
+                  "production_run_batch_summary",
                   "check_duplicate_result",
                   "item_costs",
                   "item_trends",
@@ -108872,6 +109159,7 @@
                 "user_photo_upload_result",
                 "user_photo_url",
                 "batch_lot",
+                "production_run_batch_summary",
                 "check_duplicate_result",
                 "item_costs",
                 "item_trends",
@@ -139775,6 +140063,36 @@
                       "updated_at": "2026-05-10T00:23:00Z"
                     },
                     "batch_count": 3,
+                    "batch_summaries": {
+                      "object": "list",
+                      "page_info": {
+                        "next_page_url": null,
+                        "previous_page_url": null,
+                        "has_next_page": false,
+                        "has_prev_page": false
+                      },
+                      "data": [
+                        {
+                          "object": "production_run_batch_summary",
+                          "item": {
+                            "id": "it_pej07ckhvu62",
+                            "object": "entity",
+                            "type": "item",
+                            "name": "ALM-2024-1001",
+                            "handle": null
+                          },
+                          "unit": {
+                            "id": "un_82bd37dae5po",
+                            "object": "entity",
+                            "type": "unit",
+                            "name": "ea",
+                            "handle": null
+                          },
+                          "quantity_value": "300",
+                          "batch_count": 3
+                        }
+                      ]
+                    },
                     "started_at": "2026-05-10T00:23:00Z",
                     "completed_at": null,
                     "created_at": "2026-05-10T00:00:00Z",
@@ -160788,6 +161106,36 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "batch_count": 3,
+                  "batch_summaries": {
+                    "object": "list",
+                    "page_info": {
+                      "next_page_url": null,
+                      "previous_page_url": null,
+                      "has_next_page": false,
+                      "has_prev_page": false
+                    },
+                    "data": [
+                      {
+                        "object": "production_run_batch_summary",
+                        "item": {
+                          "id": "it_pej07ckhvu62",
+                          "object": "entity",
+                          "type": "item",
+                          "name": "ALM-2024-1001",
+                          "handle": null
+                        },
+                        "unit": {
+                          "id": "un_82bd37dae5po",
+                          "object": "entity",
+                          "type": "unit",
+                          "name": "ea",
+                          "handle": null
+                        },
+                        "quantity_value": "300",
+                        "batch_count": 3
+                      }
+                    ]
+                  },
                   "started_at": "2026-05-10T00:23:00Z",
                   "completed_at": null,
                   "created_at": "2026-05-10T00:00:00Z",
