@@ -78599,7 +78599,8 @@
             "type": "string"
           },
           "notes": {
-            "description": "Free-form notes about the department.",
+            "description": "Free-form notes about the department.\n\nSend `null` to clear.",
+            "nullable": true,
             "type": "string"
           },
           "location_id": {
@@ -78892,7 +78893,8 @@
             "type": "string"
           },
           "notes": {
-            "description": "Free-form notes about the machine.",
+            "description": "Free-form notes about the machine.\n\nSend `null` to clear.",
+            "nullable": true,
             "type": "string"
           }
         },
@@ -124288,6 +124290,23 @@
             "name": "q",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Sub-objects to expand in the response. When omitted, sub-objects are returned as `null`.",
+            "example": [
+              "department"
+            ],
+            "in": "query",
+            "name": "include[]",
+            "schema": {
+              "items": {
+                "enum": [
+                  "department"
+                ],
+                "type": "string"
+              },
+              "type": "array"
             }
           }
         ],
