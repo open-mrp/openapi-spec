@@ -124261,7 +124261,7 @@
     },
     "/v1/operations/machines": {
       "get": {
-        "description": "Returns a paginated list of machines in your account, most recently created first.\n\nThe search term matches the machine name.\n\nThis endpoint requires the permission: `machines:read`.",
+        "description": "Returns a paginated list of machines in your account, most recently created first.\n\nThe search term matches the start of the machine name, and a machine named exactly the term is listed\nfirst.\n\nThis endpoint requires the permission: `machines:read`.",
         "operationId": "list-machines",
         "parameters": [
           {
