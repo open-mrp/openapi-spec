@@ -11947,8 +11947,7 @@
           }
         },
         "required": [
-          "type",
-          "participant_account_user_ids"
+          "type"
         ],
         "type": "object"
       },
