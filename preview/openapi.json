@@ -82182,7 +82182,7 @@
   "info": {
     "description": "API for OpenMRP services",
     "title": "OpenMRP API",
-    "version": "1.0.forge-preview.7"
+    "version": "1.0.forge-preview.8"
   },
   "openapi": "3.0.0",
   "paths": {
