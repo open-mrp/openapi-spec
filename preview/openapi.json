@@ -547,11 +547,13 @@
             "type": "string"
           },
           "commission_policy": {
-            "description": "How sales commission applies to accounts in this group.\n\n- `commission_applied`: sales commission is calculated on orders from accounts in this group.\n- `commission_exempt`: orders from accounts in this group are exempt from commission.",
+            "description": "How sales commission applies to accounts in this group.\n\n- `commission_applied`: sales commission is calculated on orders from accounts in this group.\n- `commission_exempt`: orders from accounts in this group are exempt from commission.\n\nNull to customer and supplier portal users, like the rest of your commission settings.",
             "enum": [
               "commission_applied",
-              "commission_exempt"
+              "commission_exempt",
+              null
             ],
+            "nullable": true,
             "type": "string"
           },
           "freight_policy": {
@@ -1027,6 +1029,10 @@
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
                 "is_commission_eligible": false,
+                "notification_types": [
+                  "invoice",
+                  "order_acknowledgement"
+                ],
                 "last_used_at": "2026-05-10T00:23:00Z",
                 "created_at": "2026-05-10T00:00:00Z",
                 "updated_at": "2026-05-10T00:23:00Z"
@@ -1793,6 +1799,10 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "is_commission_eligible": false,
+                  "notification_types": [
+                    "invoice",
+                    "order_acknowledgement"
+                  ],
                   "last_used_at": "2026-05-10T00:23:00Z",
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -2504,6 +2514,10 @@
             "updated_at": "2026-05-10T00:23:00Z"
           },
           "is_commission_eligible": false,
+          "notification_types": [
+            "invoice",
+            "order_acknowledgement"
+          ],
           "last_used_at": "2026-05-10T00:23:00Z",
           "created_at": "2026-05-10T00:00:00Z",
           "updated_at": "2026-05-10T00:23:00Z"
@@ -2685,11 +2699,25 @@
             "x-expandable": true
           },
           "is_commission_eligible": {
-            "description": "Whether this user can be assigned as a sales representative on orders, territories, and targets.\n\nIndependent of the `sales_rep` role type, which still scopes analytics and hides cost. Users with the `sales_rep` role are always eligible.",
+            "description": "Whether this user can be assigned as a sales representative on orders, territories, and targets.\n\nIndependent of the `sales_rep` role type, which still scopes analytics and hides cost. Users with the `sales_rep` role are always eligible.\n\nNull to customer and supplier portal users, like the rest of your commission settings.",
+            "nullable": true,
             "type": "boolean"
           },
+          "notification_types": {
+            "description": "The notifications you send this user about the customer or supplier account they belong to.\n\nSet when the account you are acting in is a customer or supplier account you manage, and an empty list when none are enabled; turn them on and off with `preferences` on create and update. `null` for your own account's users, and where an account user is embedded in another resource.\n\n- `order_acknowledgement`: the confirmation email sent when an order is placed for the customer.\n- `invoice`: invoice emails for the customer's orders.\n- `purchase_order_submission`: a copy of each purchase order you submit to the supplier.",
+            "items": {
+              "enum": [
+                "invoice",
+                "order_acknowledgement",
+                "purchase_order_submission"
+              ],
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
           "last_used_at": {
-            "description": "When the user last accessed this account.",
+            "description": "When the user last accessed this account.\n\nNull to customer and supplier portal users: it is your own team's activity.",
             "format": "date-time",
             "nullable": true,
             "type": "string"
@@ -2713,6 +2741,7 @@
           "department",
           "user",
           "is_commission_eligible",
+          "notification_types",
           "last_used_at",
           "created_at",
           "updated_at"
@@ -2977,6 +3006,10 @@
               "sales_totals",
               "sales_breakdown",
               "sales_invoice",
+              "open_orders_summary",
+              "open_order_product",
+              "open_order",
+              "open_order_line",
               "new_customer",
               "schedule_order_coverage",
               "schedule_order_coverage_line",
@@ -3176,7 +3209,13 @@
               "invoice_related",
               "pick_related",
               "pick_totals",
-              "pick_stage_total"
+              "pick_stage_total",
+              "analyze_production_costs_response",
+              "production_cost",
+              "production_cost_totals",
+              "production_cost_department",
+              "production_cost_category",
+              "production_cost_department_category"
             ],
             "type": "string"
           },
@@ -6153,7 +6192,8 @@
               "agent.alert",
               "system.broadcast",
               "customer.registered",
-              "production_run.updated"
+              "production_run.updated",
+              "invoice.payment_status_changed"
             ],
             "type": "string"
           },
@@ -6989,6 +7029,10 @@
               "sales_totals",
               "sales_breakdown",
               "sales_invoice",
+              "open_orders_summary",
+              "open_order_product",
+              "open_order",
+              "open_order_line",
               "new_customer",
               "schedule_order_coverage",
               "schedule_order_coverage_line",
@@ -7188,7 +7232,13 @@
               "invoice_related",
               "pick_related",
               "pick_totals",
-              "pick_stage_total"
+              "pick_stage_total",
+              "analyze_production_costs_response",
+              "production_cost",
+              "production_cost_totals",
+              "production_cost_department",
+              "production_cost_category",
+              "production_cost_department_category"
             ],
             "type": "string"
           },
@@ -7560,7 +7610,7 @@
             "type": "object"
           },
           "new_value": {
-            "description": "New value as a JSON fragment.\n\n`null` on `delete` events, where the field has no remaining value. Encoded as a JSON value (object, array, string, number, boolean, or null), not a JSON-encoded string.",
+            "description": "New value as a JSON fragment.\n\n`null` on `delete` events, where the field has no remaining value.\n\nBoth values are `null` on a change to a cost field, such as a unit cost or labor rate, unless the caller holds `costs:read`. Encoded as a JSON value (object, array, string, number, boolean, or null), not a JSON-encoded string.",
             "nullable": true,
             "type": "object"
           }
@@ -7705,7 +7755,7 @@
             "type": "string"
           },
           "unit": {
-            "description": "Abbreviation of a unit available to your account (e.g. `kg`).\n\nThe unit is checked for existence only: the quantity is always recorded in the item's own base unit, so send figures already expressed in that unit. Rows naming an abbreviation that matches no built-in or account-defined unit are reported in the response's `errors`.",
+            "description": "Abbreviation of the unit `quantity` is counted in (e.g. `kg`), matched without regard to case.\n\nIt must be the item's base unit or another unit in its category's unit group; the quantity is converted from it into the base unit before it is applied, so `2 dz` against an item stocked in eaches reconciles 24. A row whose abbreviation matches no unit, or a unit outside the item's unit group, is reported in the response's `errors` and writes nothing.",
             "type": "string"
           },
           "quantity": {
@@ -7735,7 +7785,7 @@
         },
         "properties": {
           "data": {
-            "description": "Items to reconcile.",
+            "description": "Items to reconcile, at most 1,000 rows per request. Split a larger count across requests.",
             "items": {
               "$ref": "#/components/schemas/BulkReconcileItemInput"
             },
@@ -9749,6 +9799,10 @@
               "updated_at": "2026-05-10T00:23:00Z"
             },
             "is_commission_eligible": false,
+            "notification_types": [
+              "invoice",
+              "order_acknowledgement"
+            ],
             "last_used_at": "2026-05-10T00:23:00Z",
             "created_at": "2026-05-10T00:00:00Z",
             "updated_at": "2026-05-10T00:23:00Z"
@@ -9987,6 +10041,10 @@
                 "updated_at": "2026-05-10T00:23:00Z"
               },
               "is_commission_eligible": false,
+              "notification_types": [
+                "invoice",
+                "order_acknowledgement"
+              ],
               "last_used_at": "2026-05-10T00:23:00Z",
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -10319,11 +10377,13 @@
             "type": "string"
           },
           "legal_hold": {
-            "description": "Whether the conversation is under legal hold.\n\nWhile held, the conversation is exempt from automatic retention purging and from redaction until the hold is released.",
+            "description": "Whether the conversation is under legal hold.\n\nWhile held, the conversation is exempt from automatic retention purging and from redaction until the hold is released.\n\nNull to customer and supplier portal users: a hold is your own legal matter.",
             "enum": [
               "released",
-              "held"
+              "held",
+              null
             ],
+            "nullable": true,
             "type": "string"
           },
           "assignee": {
@@ -11052,6 +11112,30 @@
         ],
         "type": "object"
       },
+      "ConversationParticipantInput": {
+        "description": "A member to seat in a new group conversation, with the role they start with.",
+        "properties": {
+          "account_user_id": {
+            "description": "The account user to add.",
+            "type": "string"
+          },
+          "role": {
+            "description": "The role the member starts with.\n\n- `owner`: can rename or delete the conversation and manage members and roles, alongside you.\n- `admin`: can add and remove members and rename the conversation.\n- `member`: can post, leave, mute, and react.\n- `viewer`: read-only access.",
+            "enum": [
+              "owner",
+              "admin",
+              "member",
+              "viewer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_user_id",
+          "role"
+        ],
+        "type": "object"
+      },
       "CreateAPIKeyRequest": {
         "description": "Request to create an API key.",
         "example": {
@@ -11271,7 +11355,7 @@
             "type": "boolean"
           },
           "preferences": {
-            "description": "Notification preference toggles for the new user.\n\nOnly applies when creating a user in another account you manage (cross-account); ignored when creating a user in your own account.",
+            "description": "Notification preference toggles for the new user.\n\nOnly applies when adding a user to a customer or supplier account you manage; ignored when adding a user to your own account. The enabled types are returned in the user's `notification_types`. When the user is one you previously removed, the toggles apply over the preferences they had before removal, and types you leave out keep their previous state.",
             "items": {
               "$ref": "#/components/schemas/NotificationPreferenceItem"
             },
@@ -11485,6 +11569,12 @@
           "participant_account_user_ids": [
             "acus_e5zu8bde0z3h"
           ],
+          "participants": [
+            {
+              "account_user_id": "acus_e5zu8bde0z3h",
+              "role": "admin"
+            }
+          ],
           "group_id": "cvgp_wjlypugna7s4",
           "title": "Order #1042 — shipping question",
           "topic_resource_type": "sales_order",
@@ -11504,6 +11594,13 @@
             "description": "The other participants to add.\n\nFor a direct message, exactly one account user. For a group, the members to seed — these can be omitted when `group_id` supplies a roster, or when the conversation is anchored to a topic resource, since a record discussion may start solo and pull people in later.\n\nThe caller is always a participant and does not need to be listed; on a group they become its owner and every other member seeded at creation is notified.",
             "items": {
               "type": "string"
+            },
+            "type": "array"
+          },
+          "participants": {
+            "description": "Members to seat in a group with the role each starts with.\n\nEach account user listed here joins the group as those in `participant_account_user_ids` do, then takes the role given, exactly as if you set it on the new participant: the change is announced in the thread and recorded on the participant's history. A user also listed in `participant_account_user_ids` or on the roster takes the role given here. You cannot list yourself (you own the group) or the same user twice, and a direct message takes no roles.",
+            "items": {
+              "$ref": "#/components/schemas/ConversationParticipantInput"
             },
             "type": "array"
           },
@@ -11639,6 +11736,10 @@
               "sales_totals",
               "sales_breakdown",
               "sales_invoice",
+              "open_orders_summary",
+              "open_order_product",
+              "open_order",
+              "open_order_line",
               "new_customer",
               "schedule_order_coverage",
               "schedule_order_coverage_line",
@@ -11838,7 +11939,13 @@
               "invoice_related",
               "pick_related",
               "pick_totals",
-              "pick_stage_total"
+              "pick_stage_total",
+              "analyze_production_costs_response",
+              "production_cost",
+              "production_cost_totals",
+              "production_cost_department",
+              "production_cost_category",
+              "production_cost_department_category"
             ],
             "type": "string"
           },
@@ -12310,6 +12417,22 @@
         "required": [
           "email_domain_id",
           "address"
+        ],
+        "type": "object"
+      },
+      "CreateItemCategoryPropertyRequest": {
+        "description": "Request to create a property on an item category.",
+        "example": {
+          "name": "Color"
+        },
+        "properties": {
+          "name": {
+            "description": "Display name of the new property, such as `Color` or `Size`.\n\nMust be unique within your account. To attach a property that already exists, use the add item category property endpoint.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
         ],
         "type": "object"
       },
@@ -13351,12 +13474,46 @@
             "type": "string"
           },
           "bill_to_address_id": {
-            "description": "Bill-to address ID.\n\nMust reference an existing address on the order's owner or buyer account.",
+            "description": "Bill-to address ID.\n\nMust reference an existing address on the order's owner or buyer account. Required unless `bill_to_address` is sent instead.",
             "type": "string"
           },
           "ship_to_address_id": {
-            "description": "Ship-to address ID.\n\nMust reference an existing address on the order's owner or buyer account.",
+            "description": "Ship-to address ID.\n\nMust reference an existing address on the order's owner or buyer account. Required unless `ship_to_address` is sent instead.",
             "type": "string"
+          },
+          "bill_to_address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InlineAddressInput"
+              }
+            ],
+            "description": "Bill-to address saved to the customer's account with the order, in place of `bill_to_address_id`: a new address, or an update to one of the customer's saved addresses named by its `id`.\n\nSaving it needs no permission beyond creating the order.",
+            "example": {
+              "name": "Receiving dock",
+              "type": "standard",
+              "street_line_1": "123 Main St",
+              "locality": "Springfield",
+              "state": "IL",
+              "postal_code": "62701",
+              "country": "US"
+            }
+          },
+          "ship_to_address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InlineAddressInput"
+              }
+            ],
+            "description": "Ship-to address saved to the customer's account with the order, in place of `ship_to_address_id`: a new address, or an update to one of the customer's saved addresses named by its `id`.\n\nSaving it needs no permission beyond creating the order. An identical `bill_to_address` and `ship_to_address` are saved as one address.",
+            "example": {
+              "name": "Receiving dock",
+              "type": "standard",
+              "street_line_1": "123 Main St",
+              "locality": "Springfield",
+              "state": "IL",
+              "postal_code": "62701",
+              "country": "US"
+            }
           },
           "lines": {
             "description": "The line items to put on the order.\n\nThe freight line, and the discount line when `order_discount_id` is supplied, are added on top of these automatically.",
@@ -13383,8 +13540,6 @@
         "required": [
           "buyer_account_id",
           "priority_code",
-          "bill_to_address_id",
-          "ship_to_address_id",
           "lines"
         ],
         "type": "object"
@@ -13404,16 +13559,17 @@
             "type": "string"
           },
           "ends_at": {
-            "description": "End of the period the target applies to.",
+            "description": "End of the period the target applies to. It may not be before `starts_at`.",
             "format": "date-time",
             "type": "string"
           },
           "amount_value": {
             "description": "The revenue goal for the period, as a decimal string (e.g. `50000.00`).",
+            "format": "decimal",
             "type": "string"
           },
           "amount_unit_id": {
-            "description": "The unit the goal is denominated in, typically a currency unit.",
+            "description": "The unit the goal is denominated in, typically a currency unit. It must be one of your account's units or a unit every account shares.",
             "type": "string"
           }
         },
@@ -14463,6 +14619,10 @@
                 "updated_at": "2026-05-10T00:23:00Z"
               },
               "is_commission_eligible": false,
+              "notification_types": [
+                "invoice",
+                "order_acknowledgement"
+              ],
               "last_used_at": "2026-05-10T00:23:00Z",
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -14605,15 +14765,17 @@
             "type": "string"
           },
           "commission_policy": {
-            "description": "How sales commission applies to this customer's orders.\n\n- `commission_exempt`: this customer's orders are exempt from sales commission.\n- `commission_applied`: sales commission is calculated on this customer's orders.\n\nThe customer counts as exempt if this field, its `type` group, or any of its `price_groups` is `commission_exempt`. Exempt customers never have a sales rep assigned automatically when an order is created without one.",
+            "description": "How sales commission applies to this customer's orders.\n\n- `commission_exempt`: this customer's orders are exempt from sales commission.\n- `commission_applied`: sales commission is calculated on this customer's orders.\n\nThe customer counts as exempt if this field, its `type` group, or any of its `price_groups` is `commission_exempt`. Exempt customers never have a sales rep assigned automatically when an order is created without one.\n\nNull to customer and supplier portal users, like the rest of your commission settings.",
             "enum": [
               "commission_applied",
-              "commission_exempt"
+              "commission_exempt",
+              null
             ],
+            "nullable": true,
             "type": "string"
           },
           "note": {
-            "description": "Free-form note about the customer.",
+            "description": "Free-form note about the customer.\n\nNull to customer and supplier portal users: it is your own team's note.",
             "nullable": true,
             "type": "string"
           },
@@ -15154,6 +15316,10 @@
                         "updated_at": "2026-05-10T00:23:00Z"
                       },
                       "is_commission_eligible": false,
+                      "notification_types": [
+                        "invoice",
+                        "order_acknowledgement"
+                      ],
                       "last_used_at": "2026-05-10T00:23:00Z",
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
@@ -15552,6 +15718,10 @@
                 "updated_at": "2026-05-10T00:23:00Z"
               },
               "is_commission_eligible": false,
+              "notification_types": [
+                "invoice",
+                "order_acknowledgement"
+              ],
               "last_used_at": "2026-05-10T00:23:00Z",
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -15570,7 +15740,7 @@
             "type": "string"
           },
           "fulfillment_policy": {
-            "description": "How this customer's orders are produced.\n\n- `make_to_stock`: their order history feeds the production-schedule forecast, so stock is built ahead of their demand.\n- `make_to_order`: their history is left out of the forecast; their orders are produced only once placed, and fit into the schedule on their own ship-by dates.\n\nWith none set here the customer inherits its account group's policy, then falls back to make-to-stock.",
+            "description": "How this customer's orders are produced.\n\n- `make_to_stock`: their order history feeds the production-schedule forecast, so stock is built ahead of their demand.\n- `make_to_order`: their history is left out of the forecast; their orders are produced only once placed, and fit into the schedule on their own ship-by dates.\n\nWith none set here the customer inherits its account group's policy, then falls back to make-to-stock. Always null to customer and supplier portal users, like the rest of your production planning.",
             "enum": [
               "make_to_stock",
               "make_to_order",
@@ -16150,6 +16320,10 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "is_commission_eligible": false,
+                  "notification_types": [
+                    "invoice",
+                    "order_acknowledgement"
+                  ],
                   "last_used_at": "2026-05-10T00:23:00Z",
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -17096,7 +17270,7 @@
                 "$ref": "#/components/schemas/Rate"
               }
             ],
-            "description": "Hourly labor rate for work done in this department, such as a changeover technician.\n\nProduction scheduling costs changeovers with the constraint department's rate when one is set, falling back to the account-wide changeover labor rate setting.",
+            "description": "Hourly labor rate for work done in this department, such as a changeover technician.\n\nProduction scheduling costs changeovers with the constraint department's rate when one is set, falling back to the account-wide changeover labor rate setting.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
             "example": {
               "id": "ra_jhgtyileng4s",
               "object": "rate",
@@ -18049,6 +18223,10 @@
               "sales_totals",
               "sales_breakdown",
               "sales_invoice",
+              "open_orders_summary",
+              "open_order_product",
+              "open_order",
+              "open_order_line",
               "new_customer",
               "schedule_order_coverage",
               "schedule_order_coverage_line",
@@ -18248,7 +18426,13 @@
               "invoice_related",
               "pick_related",
               "pick_totals",
-              "pick_stage_total"
+              "pick_stage_total",
+              "analyze_production_costs_response",
+              "production_cost",
+              "production_cost_totals",
+              "production_cost_department",
+              "production_cost_category",
+              "production_cost_department_category"
             ],
             "type": "string"
           },
@@ -18799,7 +18983,8 @@
             "type": "number"
           },
           "annual_cogs": {
-            "description": "Annual cost of goods for this item: demand times unit cost.",
+            "description": "Annual cost of goods for this item: demand times unit cost.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
+            "nullable": true,
             "type": "number"
           },
           "months_since_last_sale": {
@@ -18915,6 +19100,77 @@
           "postal_code",
           "country"
         ],
+        "type": "object"
+      },
+      "InlineAddressInput": {
+        "description": "An address saved together with the record that uses it, under that record's own permission.\n\nWithout `id`, a new address is created from these fields, so `name` and `country` are required. With `id`, that saved address is updated: omitted fields are left unchanged, and `null` clears `phone`, `email`, `receive_calendar_id` or `street_line_2`. The address must already belong to the account the record saves it in.",
+        "example": {
+          "name": "Receiving dock",
+          "type": "standard",
+          "street_line_1": "123 Main St",
+          "locality": "Springfield",
+          "state": "IL",
+          "postal_code": "62701",
+          "country": "US"
+        },
+        "properties": {
+          "id": {
+            "description": "ID of a saved address to update instead of creating a new one.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Display name of the address. Required when `id` is omitted.",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Phone number associated with the address.",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "description": "Email address associated with the address.",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "How the address is used.\n\n- `standard`: a normal shipping or billing address.\n- `drop_ship`: an address an order is shipped to directly, typically a third party or end customer rather than the account itself.",
+            "enum": [
+              "standard",
+              "drop_ship"
+            ],
+            "type": "string"
+          },
+          "receive_calendar_id": {
+            "description": "The operating calendar naming the days this dock accepts freight, overriding the customer's own.",
+            "nullable": true,
+            "type": "string"
+          },
+          "street_line_1": {
+            "description": "First line of the street address.",
+            "type": "string"
+          },
+          "street_line_2": {
+            "description": "Second line of the street address.",
+            "nullable": true,
+            "type": "string"
+          },
+          "locality": {
+            "description": "City or locality.",
+            "type": "string"
+          },
+          "state": {
+            "description": "State or administrative area.",
+            "type": "string"
+          },
+          "postal_code": {
+            "description": "Postal or ZIP code.",
+            "type": "string"
+          },
+          "country": {
+            "description": "Two-letter ISO 3166-1 country code, such as `US`. Required when `id` is omitted.",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "InventoryChangeLog": {
@@ -20075,7 +20331,7 @@
             "type": "string"
           },
           "notes": {
-            "description": "Free-form notes about the item.",
+            "description": "Free-form notes about the item.\n\nNull to customer and supplier portal users: they are your own team's notes.",
             "nullable": true,
             "type": "string"
           },
@@ -20292,7 +20548,7 @@
                 "$ref": "#/components/schemas/Rate"
               }
             ],
-            "description": "Cost per unit, expressed as a rate (e.g. `$10.00 / kg`).\n\nFor items a production flow produces, retrieving the item's costs recomputes this from the flow and stores the result here, so it can change without the item having been edited.",
+            "description": "Cost per unit, expressed as a rate (e.g. `$10.00 / kg`).\n\nFor items a production flow produces, this is restated from the flow shortly after anything the item is built from changes, so it can change without the item having been edited.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
             "example": {
               "id": "ra_jhgtyileng4s",
               "object": "rate",
@@ -20348,7 +20604,7 @@
                 "$ref": "#/components/schemas/Rate"
               }
             ],
-            "description": "Rate at which this item is consumed in production, expressed as a quantity over time (e.g. `100 kg / hr`).",
+            "description": "Rate at which this item is consumed in production, expressed as a quantity over time (e.g. `100 kg / hr`).\n\nNull to customer and supplier portal users: it is drawn from every customer's demand.",
             "example": {
               "id": "ra_jhgtyileng4s",
               "object": "rate",
@@ -20615,7 +20871,7 @@
             "type": "string"
           },
           "notes": {
-            "description": "Free-form notes about the item category.",
+            "description": "Free-form notes about the item category.\n\nNull to customer and supplier portal users: they are your own team's notes.",
             "nullable": true,
             "type": "string"
           },
@@ -21393,6 +21649,10 @@
               "sales_totals",
               "sales_breakdown",
               "sales_invoice",
+              "open_orders_summary",
+              "open_order_product",
+              "open_order",
+              "open_order_line",
               "new_customer",
               "schedule_order_coverage",
               "schedule_order_coverage_line",
@@ -21593,6 +21853,12 @@
               "pick_related",
               "pick_totals",
               "pick_stage_total",
+              "analyze_production_costs_response",
+              "production_cost",
+              "production_cost_totals",
+              "production_cost_department",
+              "production_cost_category",
+              "production_cost_department_category",
               null
             ],
             "nullable": true,
@@ -22480,6 +22746,10 @@
                       "updated_at": "2026-05-10T00:23:00Z"
                     },
                     "is_commission_eligible": false,
+                    "notification_types": [
+                      "invoice",
+                      "order_acknowledgement"
+                    ],
                     "last_used_at": "2026-05-10T00:23:00Z",
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
@@ -23145,6 +23415,10 @@
                 "updated_at": "2026-05-10T00:23:00Z"
               },
               "is_commission_eligible": false,
+              "notification_types": [
+                "invoice",
+                "order_acknowledgement"
+              ],
               "last_used_at": "2026-05-10T00:23:00Z",
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -25500,6 +25774,10 @@
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
                 "is_commission_eligible": false,
+                "notification_types": [
+                  "invoice",
+                  "order_acknowledgement"
+                ],
                 "last_used_at": "2026-05-10T00:23:00Z",
                 "created_at": "2026-05-10T00:00:00Z",
                 "updated_at": "2026-05-10T00:23:00Z"
@@ -26296,6 +26574,10 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "is_commission_eligible": false,
+                  "notification_types": [
+                    "invoice",
+                    "order_acknowledgement"
+                  ],
                   "last_used_at": "2026-05-10T00:23:00Z",
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -30222,6 +30504,10 @@
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
                 "is_commission_eligible": false,
+                "notification_types": [
+                  "invoice",
+                  "order_acknowledgement"
+                ],
                 "last_used_at": "2026-05-10T00:23:00Z",
                 "created_at": "2026-05-10T00:00:00Z",
                 "updated_at": "2026-05-10T00:23:00Z"
@@ -30737,6 +31023,10 @@
                 "sales_totals",
                 "sales_breakdown",
                 "sales_invoice",
+                "open_orders_summary",
+                "open_order_product",
+                "open_order",
+                "open_order_line",
                 "new_customer",
                 "schedule_order_coverage",
                 "schedule_order_coverage_line",
@@ -30936,7 +31226,13 @@
                 "invoice_related",
                 "pick_related",
                 "pick_totals",
-                "pick_stage_total"
+                "pick_stage_total",
+                "analyze_production_costs_response",
+                "production_cost",
+                "production_cost_totals",
+                "production_cost_department",
+                "production_cost_category",
+                "production_cost_department_category"
               ],
               "type": "string"
             },
@@ -32162,6 +32458,10 @@
                       "updated_at": "2026-05-10T00:23:00Z"
                     },
                     "is_commission_eligible": false,
+                    "notification_types": [
+                      "invoice",
+                      "order_acknowledgement"
+                    ],
                     "last_used_at": "2026-05-10T00:23:00Z",
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
@@ -39006,6 +39306,10 @@
                       "updated_at": "2026-05-10T00:23:00Z"
                     },
                     "is_commission_eligible": false,
+                    "notification_types": [
+                      "invoice",
+                      "order_acknowledgement"
+                    ],
                     "last_used_at": "2026-05-10T00:23:00Z",
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
@@ -46323,6 +46627,7 @@
               "missing_field",
               "invalid_format",
               "method_not_allowed",
+              "request_too_large",
               "resource_not_found",
               "resource_exists",
               "resource_conflict",
@@ -46653,6 +46958,10 @@
               "updated_at": "2026-05-10T00:23:00Z"
             },
             "is_commission_eligible": false,
+            "notification_types": [
+              "invoice",
+              "order_acknowledgement"
+            ],
             "last_used_at": "2026-05-10T00:23:00Z",
             "created_at": "2026-05-10T00:00:00Z",
             "updated_at": "2026-05-10T00:23:00Z"
@@ -46808,6 +47117,10 @@
                 "updated_at": "2026-05-10T00:23:00Z"
               },
               "is_commission_eligible": false,
+              "notification_types": [
+                "invoice",
+                "order_acknowledgement"
+              ],
               "last_used_at": "2026-05-10T00:23:00Z",
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -47083,7 +47396,8 @@
               "agent.alert",
               "system.broadcast",
               "customer.registered",
-              "production_run.updated"
+              "production_run.updated",
+              "invoice.payment_status_changed"
             ],
             "type": "string"
           },
@@ -47269,6 +47583,7 @@
               "system.broadcast",
               "customer.registered",
               "production_run.updated",
+              "invoice.payment_status_changed",
               null
             ],
             "nullable": true,
@@ -49622,6 +49937,10 @@
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
                 "is_commission_eligible": false,
+                "notification_types": [
+                  "invoice",
+                  "order_acknowledgement"
+                ],
                 "last_used_at": "2026-05-10T00:23:00Z",
                 "created_at": "2026-05-10T00:00:00Z",
                 "updated_at": "2026-05-10T00:23:00Z"
@@ -51520,6 +51839,10 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "is_commission_eligible": false,
+                  "notification_types": [
+                    "invoice",
+                    "order_acknowledgement"
+                  ],
                   "last_used_at": "2026-05-10T00:23:00Z",
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -57177,16 +57500,18 @@
             "type": "string"
           },
           "notes": {
-            "description": "Free-form notes about the product line.",
+            "description": "Free-form notes about the product line.\n\nNull to customer and supplier portal users: they are your own team's notes.",
             "nullable": true,
             "type": "string"
           },
           "commission_policy": {
-            "description": "Default commission policy for products in this product line.\n\n- `commission_exempt`: no commission applies to these products.\n- `commission_applied`: commission applies to these products, unless overridden elsewhere.",
+            "description": "Default commission policy for products in this product line.\n\n- `commission_exempt`: no commission applies to these products.\n- `commission_applied`: commission applies to these products, unless overridden elsewhere.\n\nNull to customer and supplier portal users, like the rest of your commission settings.",
             "enum": [
               "commission_applied",
-              "commission_exempt"
+              "commission_exempt",
+              null
             ],
+            "nullable": true,
             "type": "string"
           },
           "freight_policy": {
@@ -57310,7 +57635,7 @@
                 "$ref": "#/components/schemas/Quantity"
               }
             ],
-            "description": "The lot products in this line are made in — a doff, a pallet.\n\nSizes the campaigns a production schedule plans, and defaults the quantity when a batch is added to a production run. The unit is part of the value — 60 counted in pairs and 60 counted in eaches are different lots — and is drawn from this product line's unit group.\n\nAn item's own lot override still takes precedence over the line's. When the line has no lot convention, planning falls back to the lot of the line the item feeds into, and then to the account-wide default lot size.",
+            "description": "The lot products in this line are made in — a doff, a pallet.\n\nSizes the campaigns a production schedule plans, and defaults the quantity when a batch is added to a production run. The unit is part of the value — 60 counted in pairs and 60 counted in eaches are different lots — and is drawn from this product line's unit group.\n\nAn item's own lot override still takes precedence over the line's. When the line has no lot convention, planning falls back to the lot of the line the item feeds into, and then to the account-wide default lot size.\n\nNull to customer and supplier portal users, like the rest of your production planning.",
             "example": {
               "id": "qty_8hnxbigf0bod",
               "object": "quantity",
@@ -57340,7 +57665,7 @@
             "x-expandable": true
           },
           "fulfillment_policy": {
-            "description": "How products in this line are produced when they do not say for themselves.\n\n- `make_to_stock`: built to the forecast, holding a safety stock against its variability.\n- `make_to_order`: built only against orders already on the book, holding no buffer.\n\nNull falls through to the account default.",
+            "description": "How products in this line are produced when they do not say for themselves.\n\n- `make_to_stock`: built to the forecast, holding a safety stock against its variability.\n- `make_to_order`: built only against orders already on the book, holding no buffer.\n\nNull falls through to the account default. Always null to customer and supplier portal users, like the rest of your production planning.",
             "enum": [
               "make_to_stock",
               "make_to_order",
@@ -58239,6 +58564,10 @@
               "updated_at": "2026-05-10T00:23:00Z"
             },
             "is_commission_eligible": false,
+            "notification_types": [
+              "invoice",
+              "order_acknowledgement"
+            ],
             "last_used_at": "2026-05-10T00:23:00Z",
             "created_at": "2026-05-10T00:00:00Z",
             "updated_at": "2026-05-10T00:23:00Z"
@@ -58301,7 +58630,7 @@
                 "$ref": "#/components/schemas/AccountUser"
               }
             ],
-            "description": "Account user accountable for executing the run.",
+            "description": "Account user accountable for executing the run.\n\nNull to customer and supplier portal users, like the run's batches.",
             "example": {
               "id": "acus_e5zu8bde0z3h",
               "object": "account_user",
@@ -58432,6 +58761,10 @@
                 "updated_at": "2026-05-10T00:23:00Z"
               },
               "is_commission_eligible": false,
+              "notification_types": [
+                "invoice",
+                "order_acknowledgement"
+              ],
               "last_used_at": "2026-05-10T00:23:00Z",
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -58440,7 +58773,8 @@
             "x-expandable": true
           },
           "batch_count": {
-            "description": "Number of batches currently recorded against this run.",
+            "description": "Number of batches currently recorded against this run.\n\nNull to customer and supplier portal users: a run can hold other customers' work.",
+            "nullable": true,
             "type": "integer"
           },
           "batch_summaries": {
@@ -58449,7 +58783,7 @@
                 "$ref": "#/components/schemas/List_ProductionRunBatchSummary"
               }
             ],
-            "description": "The run's batches totalled per item and unit, ordered by SKU.",
+            "description": "The run's batches totalled per item and unit, ordered by SKU.\n\nNull to customer and supplier portal users: a run can hold other customers' work.",
             "example": {
               "object": "list",
               "page_info": {
@@ -58889,7 +59223,7 @@
             "additionalProperties": {
               "type": "object"
             },
-            "description": "The planning assumptions used, frozen at generation so the plan stays explainable after settings change.",
+            "description": "The planning assumptions used, frozen at generation so the plan stays explainable after settings change.\n\nA cost among them, such as `changeover_labor_rate`, is null unless the caller holds `costs:read`; customer and supplier portal users never see it.",
             "type": "object"
           },
           "diagnostics": {
@@ -60282,15 +60616,18 @@
             "type": "number"
           },
           "unit_cost": {
-            "description": "Standard cost per unit.",
+            "description": "Standard cost per unit.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
+            "nullable": true,
             "type": "number"
           },
           "setup_cost": {
-            "description": "Cost of one changeover.",
+            "description": "Cost of one changeover.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
+            "nullable": true,
             "type": "number"
           },
           "holding_cost": {
-            "description": "Annual cost of holding one unit.",
+            "description": "Annual cost of holding one unit.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
+            "nullable": true,
             "type": "number"
           },
           "eoq_units": {
@@ -61578,7 +61915,8 @@
             "type": "number"
           },
           "changeover_labor_rate": {
-            "description": "Hourly labor rate charged to a changeover.\n\nThis is a dedicated technician rate rather than an allocated production rate, because one person works a single machine through a changeover. Together with the typical changeover duration it prices the setup cost that decides economic campaign sizes. The constraint department's own labor rate takes precedence when it has one, leaving this as the fallback.",
+            "description": "Hourly labor rate charged to a changeover.\n\nThis is a dedicated technician rate rather than an allocated production rate, because one person works a single machine through a changeover. Together with the typical changeover duration it prices the setup cost that decides economic campaign sizes. The constraint department's own labor rate takes precedence when it has one, leaving this as the fallback.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
+            "nullable": true,
             "type": "number"
           },
           "holding_rate_pct": {
@@ -62784,7 +63122,7 @@
                 "$ref": "#/components/schemas/Rate"
               }
             ],
-            "description": "Cost of labor for this step, expressed as a rate of currency per unit of time (e.g. `$` per `hr`).",
+            "description": "Cost of labor for this step, expressed as a rate of currency per unit of time (e.g. `$` per `hr`).\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
             "example": {
               "id": "ra_jhgtyileng4s",
               "object": "rate",
@@ -62894,7 +63232,7 @@
                 "$ref": "#/components/schemas/Rate"
               }
             ],
-            "description": "Overhead cost for this step, expressed as a rate of currency per unit of time (e.g. `$` per `hr`).",
+            "description": "Overhead cost for this step, expressed as a rate of currency per unit of time (e.g. `$` per `hr`).\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
             "example": {
               "id": "ra_jhgtyileng4s",
               "object": "rate",
@@ -66572,6 +66910,10 @@
                 "updated_at": "2026-05-10T00:23:00Z"
               },
               "is_commission_eligible": false,
+              "notification_types": [
+                "invoice",
+                "order_acknowledgement"
+              ],
               "last_used_at": "2026-05-10T00:23:00Z",
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -66838,6 +67180,10 @@
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
                 "is_commission_eligible": false,
+                "notification_types": [
+                  "invoice",
+                  "order_acknowledgement"
+                ],
                 "last_used_at": "2026-05-10T00:23:00Z",
                 "created_at": "2026-05-10T00:00:00Z",
                 "updated_at": "2026-05-10T00:23:00Z"
@@ -67319,6 +67665,7 @@
               "missing_field",
               "invalid_format",
               "method_not_allowed",
+              "request_too_large",
               "resource_not_found",
               "resource_exists",
               "resource_conflict",
@@ -67533,6 +67880,28 @@
         ],
         "type": "object"
       },
+      "RescheduleMessageRequest": {
+        "description": "Request to move a scheduled message to a new send time.",
+        "example": {
+          "scheduled_at": "2026-03-02T14:00:00Z",
+          "body": "Reminder: the line goes down for maintenance at 6pm."
+        },
+        "properties": {
+          "scheduled_at": {
+            "description": "When the message should now be sent. Must be in the future.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "body": {
+            "description": "The revised message body, replacing what it said before.\n\nLeaving it out keeps the current body.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scheduled_at"
+        ],
+        "type": "object"
+      },
       "ResponseError": {
         "description": "ResponseError is the JSON-serializable error body returned to API clients. It contains only public information. This struct is used by the OpenAPI schema generator to produce documentation.",
         "example": {
@@ -67560,6 +67929,7 @@
               "missing_field",
               "invalid_format",
               "method_not_allowed",
+              "request_too_large",
               "resource_not_found",
               "resource_exists",
               "resource_conflict",
@@ -68106,6 +68476,10 @@
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
                 "is_commission_eligible": false,
+                "notification_types": [
+                  "invoice",
+                  "order_acknowledgement"
+                ],
                 "last_used_at": "2026-05-10T00:23:00Z",
                 "created_at": "2026-05-10T00:00:00Z",
                 "updated_at": "2026-05-10T00:23:00Z"
@@ -69809,6 +70183,10 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "is_commission_eligible": false,
+                  "notification_types": [
+                    "invoice",
+                    "order_acknowledgement"
+                  ],
                   "last_used_at": "2026-05-10T00:23:00Z",
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -73058,7 +73436,7 @@
                 "$ref": "#/components/schemas/Rate"
               }
             ],
-            "description": "Internal cost per unit.\n\nReflects what the business pays for the item, not what the customer is charged, and is used to derive line profitability.",
+            "description": "Internal cost per unit.\n\nReflects what the business pays for the item, not what the customer is charged, and is used to derive line profitability.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
             "example": {
               "id": "ra_jhgtyileng4s",
               "object": "rate",
@@ -75699,15 +76077,18 @@
             "type": "number"
           },
           "unit_cost": {
-            "description": "Standard cost per unit.",
+            "description": "Standard cost per unit.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
+            "nullable": true,
             "type": "number"
           },
           "setup_cost": {
-            "description": "Cost of one changeover, used as the setup cost in the lot-size calculation.",
+            "description": "Cost of one changeover, used as the setup cost in the lot-size calculation.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
+            "nullable": true,
             "type": "number"
           },
           "holding_cost": {
-            "description": "Annual cost of holding one unit.",
+            "description": "Annual cost of holding one unit.\n\nNull unless the caller holds `costs:read`; customer and supplier portal users never see it.",
+            "nullable": true,
             "type": "number"
           },
           "eoq_units": {
@@ -76050,6 +76431,10 @@
               "sales_totals",
               "sales_breakdown",
               "sales_invoice",
+              "open_orders_summary",
+              "open_order_product",
+              "open_order",
+              "open_order_line",
               "new_customer",
               "schedule_order_coverage",
               "schedule_order_coverage_line",
@@ -76249,7 +76634,13 @@
               "invoice_related",
               "pick_related",
               "pick_totals",
-              "pick_stage_total"
+              "pick_stage_total",
+              "analyze_production_costs_response",
+              "production_cost",
+              "production_cost_totals",
+              "production_cost_department",
+              "production_cost_category",
+              "production_cost_department_category"
             ],
             "type": "string"
           },
@@ -76304,7 +76695,8 @@
               "agent.alert",
               "system.broadcast",
               "customer.registered",
-              "production_run.updated"
+              "production_run.updated",
+              "invoice.payment_status_changed"
             ],
             "type": "string"
           },
@@ -76459,6 +76851,10 @@
               "sales_totals",
               "sales_breakdown",
               "sales_invoice",
+              "open_orders_summary",
+              "open_order_product",
+              "open_order",
+              "open_order_line",
               "new_customer",
               "schedule_order_coverage",
               "schedule_order_coverage_line",
@@ -76658,7 +77054,13 @@
               "invoice_related",
               "pick_related",
               "pick_totals",
-              "pick_stage_total"
+              "pick_stage_total",
+              "analyze_production_costs_response",
+              "production_cost",
+              "production_cost_totals",
+              "production_cost_department",
+              "production_cost_category",
+              "production_cost_department_category"
             ],
             "type": "string"
           },
@@ -77105,6 +77507,56 @@
           "sku",
           "reason"
         ],
+        "type": "object"
+      },
+      "StartInventoryChangeLogsExportRequest": {
+        "description": "Filters which inventory change logs land in the exported file.",
+        "example": {
+          "action_types": [
+            "scan"
+          ],
+          "starts_at": "2026-01-01T00:00:00Z",
+          "ends_at": "2026-03-31T00:00:00Z"
+        },
+        "properties": {
+          "item_ids": {
+            "description": "Restricts the file to changes affecting these items.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "action_types": {
+            "description": "Restricts the file to these action types.",
+            "items": {
+              "enum": [
+                "scan",
+                "user_action",
+                "system_action",
+                "user_correction"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "changed_by_user_ids": {
+            "description": "Restricts the file to changes made by these users.\n\nChanges that were recorded without a responsible user are excluded whenever this filter is set.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "starts_at": {
+            "description": "Restricts the file to change logs created on or after this timestamp.\n\nUnlike the list, no default window applies: leave it out to export from the account's first change.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "ends_at": {
+            "description": "Restricts the file to change logs created on or before this timestamp.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "ToolGroup": {
@@ -78090,7 +78542,7 @@
             "type": "boolean"
           },
           "preferences": {
-            "description": "Notification preference toggles to apply.\n\nOnly allowed when updating a user in another account you manage (cross-account); rejected otherwise. Notification types omitted from the list are left unchanged.",
+            "description": "Notification preference toggles to apply.\n\nOnly allowed when updating a user in a customer or supplier account you manage; rejected otherwise. Notification types omitted from the list are left unchanged, and the result is returned in `notification_types`.",
             "items": {
               "$ref": "#/components/schemas/NotificationPreferenceItem"
             },
@@ -78918,7 +79370,8 @@
             "value": "9.10",
             "numerator_unit_id": "un_82bd37dae5po",
             "denominator_unit_id": "un_82bd37dae5po"
-          }
+          },
+          "category_id": "ic_d06g9c6yc9ck"
         },
         "properties": {
           "sku": {
@@ -78956,6 +79409,10 @@
               }
             ],
             "description": "New cost per unit.\n\nFollows the same unit rule as on create: `numerator_unit_id` must reference a currency unit and `denominator_unit_id` must reference a non-currency unit."
+          },
+          "category_id": {
+            "description": "ID of the item category to move the material to.\n\nThe move is the one Change Item Category makes: the category has to be a material category and has to carry the properties of every attribute the material already has, and the material's rate and order-point units switch to the category's base unit while their numbers stay as they were. It is applied before the other fields in the request, so an `order_point` or `unit_cost` sent alongside is written after it.",
+            "type": "string"
           }
         },
         "type": "object"
@@ -79095,7 +79552,8 @@
         "example": {
           "sku": "BRG-6204-2RS",
           "description": "Deep groove ball bearing, 20x47x14mm",
-          "notes": "Superseded by low-friction variant; keep for legacy assemblies."
+          "notes": "Superseded by low-friction variant; keep for legacy assemblies.",
+          "category_id": "ic_d06g9c6yc9ck"
         },
         "properties": {
           "sku": {
@@ -79110,6 +79568,10 @@
           "notes": {
             "description": "New free-form notes about the part.",
             "nullable": true,
+            "type": "string"
+          },
+          "category_id": {
+            "description": "ID of the item category to move the part to.\n\nThe move is the one Change Item Category makes: the category has to be a product category and has to carry the properties of every attribute the part already has, and the part's rate units switch to the category's base unit while their numbers stay as they were. It is applied before the other fields in the request.",
             "type": "string"
           }
         },
@@ -79230,7 +79692,8 @@
             "value": "219.00",
             "numerator_unit_id": "un_82bd37dae5po",
             "denominator_unit_id": "un_82bd37dae5po"
-          }
+          },
+          "category_id": "ic_d06g9c6yc9ck"
         },
         "properties": {
           "sku": {
@@ -79262,6 +79725,10 @@
               }
             ],
             "description": "New selling price per unit.\n\nThe numerator unit must be a currency unit and the denominator unit must not be. The new rate replaces the price on the product's backing item."
+          },
+          "category_id": {
+            "description": "ID of the item category to move the product to.\n\nThe move is the one Change Item Category makes: the category has to be a product category and has to carry the properties of every attribute the product already has, and the product's rate units switch to the category's base unit while their numbers stay as they were. It is applied before the other fields in the request, so a `unit_price` sent alongside is written after it.",
+            "type": "string"
           }
         },
         "type": "object"
@@ -79418,7 +79885,7 @@
             "type": "number"
           },
           "changeover_labor_rate": {
-            "description": "Hourly labor rate charged to a changeover.\n\nThis should be a dedicated technician rate rather than an allocated production rate, because one person works a single machine through a changeover. The constraint department's own labor rate takes precedence when it has one, leaving this as the fallback.",
+            "description": "Hourly labor rate charged to a changeover.\n\nThis should be a dedicated technician rate rather than an allocated production rate, because one person works a single machine through a changeover. The constraint department's own labor rate takes precedence when it has one, leaving this as the fallback.\n\nIgnored unless the caller holds `costs:read`: the stored rate is kept, because a caller who cannot read it cannot send it back.",
             "type": "number"
           },
           "holding_rate_pct": {
@@ -79707,12 +80174,46 @@
             "type": "string"
           },
           "billing_address_id": {
-            "description": "Billing address ID.\n\nRe-points the order to an existing address. To change an address's contents, use the update-address endpoint.",
+            "description": "Billing address ID.\n\nRe-points the order to an existing address. To change the address's contents with the order, send `billing_address` instead.",
             "type": "string"
           },
           "shipping_address_id": {
-            "description": "Shipping address ID.\n\nRe-points the order to an existing address. To change an address's contents, use the update-address endpoint.",
+            "description": "Shipping address ID.\n\nRe-points the order to an existing address. To change the address's contents with the order, send `shipping_address` instead.",
             "type": "string"
+          },
+          "billing_address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InlineAddressInput"
+              }
+            ],
+            "description": "Billing address saved to the customer's account with the update: a new address, or an update to one of the customer's saved addresses named by its `id`.\n\nSaving it needs no permission beyond updating the order. Cannot be combined with `billing_address_id`. When `customer_id` changes in the same request, the address belongs to the new customer.",
+            "example": {
+              "name": "Receiving dock",
+              "type": "standard",
+              "street_line_1": "123 Main St",
+              "locality": "Springfield",
+              "state": "IL",
+              "postal_code": "62701",
+              "country": "US"
+            }
+          },
+          "shipping_address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InlineAddressInput"
+              }
+            ],
+            "description": "Shipping address saved to the customer's account with the update: a new address, or an update to one of the customer's saved addresses named by its `id`.\n\nSaving it needs no permission beyond updating the order. Cannot be combined with `shipping_address_id`. An identical `billing_address` and `shipping_address` are saved as one address.",
+            "example": {
+              "name": "Receiving dock",
+              "type": "standard",
+              "street_line_1": "123 Main St",
+              "locality": "Springfield",
+              "state": "IL",
+              "postal_code": "62701",
+              "country": "US"
+            }
           },
           "acknowledgment_status": {
             "description": "Acknowledgment status of the order.\n\nSet to `sent` to mark the acknowledgement as sent without emailing the customer, or `not_sent` to reset it.",
@@ -80727,16 +81228,17 @@
             "type": "string"
           },
           "ends_at": {
-            "description": "End of the period the target applies to.\n\nOnly applied when creating a new target; the dates on an existing target are not changed.",
+            "description": "End of the period the target applies to. It may not be before `starts_at`.\n\nOnly applied when creating a new target; the dates on an existing target are not changed.",
             "format": "date-time",
             "type": "string"
           },
           "amount_value": {
             "description": "The revenue goal for the period, as a decimal string (e.g. `75000.00`).\n\nThis is the only value an existing target accepts; everything else on it stays as it was.",
+            "format": "decimal",
             "type": "string"
           },
           "amount_unit_id": {
-            "description": "The unit the goal is denominated in, typically a currency unit.\n\nOnly applied when creating a new target; the unit on an existing target is not changed.",
+            "description": "The unit the goal is denominated in, typically a currency unit. It must be one of your account's units or a unit every account shares.\n\nOnly applied when creating a new target; the unit on an existing target is not changed.",
             "type": "string"
           }
         },
@@ -81641,7 +82143,7 @@
   "info": {
     "description": "API for OpenMRP services",
     "title": "OpenMRP API",
-    "version": "1.0.forge-preview.5"
+    "version": "1.0.forge-preview.6"
   },
   "openapi": "3.0.0",
   "paths": {
@@ -86802,6 +87304,116 @@
         "x-preview": true
       }
     },
+    "/v1/catalog/item-categories/{id}/properties": {
+      "post": {
+        "description": "Creates a property and attaches it to an item category, returning the new property.\n\nThe property is one of your account's properties like any other, starting with no attributes, and the category carries it from the moment it exists. Both happen in one request that needs only permission to update the category. A name already used by one of your account's properties returns a conflict error naming `name`.\n\nThis endpoint requires the permission: `item_categories:update`.",
+        "operationId": "create-item-category-property",
+        "parameters": [
+          {
+            "description": "Item category ID.",
+            "example": "ic_d06g9c6yc9ck",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sub-objects to expand in the response. When omitted, sub-objects are returned as `null`.",
+            "example": [
+              "attributes"
+            ],
+            "in": "query",
+            "name": "include[]",
+            "schema": {
+              "items": {
+                "enum": [
+                  "attributes"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "name": "Color"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemCategoryPropertyRequest"
+              }
+            }
+          },
+          "description": "The request body for Create Item Category Property"
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "pp_fhnnvtt3q3ov",
+                  "object": "property",
+                  "name": "Color",
+                  "attributes": {
+                    "object": "list",
+                    "page_info": {
+                      "next_page_url": null,
+                      "previous_page_url": null,
+                      "has_next_page": false,
+                      "has_prev_page": false
+                    },
+                    "data": [
+                      {
+                        "id": "at_rf1w295jt5ia",
+                        "object": "attribute",
+                        "value": "Premium",
+                        "color": "red",
+                        "sort_order": 1,
+                        "property": {
+                          "id": "pp_fhnnvtt3q3ov",
+                          "object": "property",
+                          "name": "Color",
+                          "attributes": null,
+                          "created_at": "2026-05-10T00:00:00Z",
+                          "updated_at": "2026-05-10T00:23:00Z"
+                        },
+                        "created_at": "2026-05-10T00:00:00Z",
+                        "updated_at": "2026-05-10T00:23:00Z"
+                      }
+                    ]
+                  },
+                  "created_at": "2026-05-10T00:00:00Z",
+                  "updated_at": "2026-05-10T00:23:00Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Property"
+                }
+              }
+            },
+            "description": "Successful response for Create Item Category Property"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Error response"
+          }
+        },
+        "summary": "Create Item Category Property",
+        "tags": [
+          "Item Categories"
+        ],
+        "x-preview": true
+      }
+    },
     "/v1/catalog/item-categories/{id}/properties/{property_id}": {
       "delete": {
         "description": "Detaches a property from an item category.\n\nOnly the link between the property and the category is removed; the property itself and its attributes are left intact and stay available to other categories. The property must belong to your account.\n\nThis endpoint requires the permission: `item_categories:update`.",
@@ -87013,6 +87625,11 @@
             "name": "types[]",
             "schema": {
               "items": {
+                "enum": [
+                  "product",
+                  "material",
+                  "part"
+                ],
                 "type": "string"
               },
               "type": "array"
@@ -87494,7 +88111,7 @@
     },
     "/v1/catalog/items/actions/bulk-reconcile": {
       "post": {
-        "description": "Reconciles inventory for multiple items by SKU in one call, the bulk equivalent of counting stock and correcting the books.\n\n`reconcile_type` controls whether each quantity is added to the item's current quantity (`addition`) or replaces it (`force`). The figure a `force` measures against is what is on hand net of demand nothing has covered, the same basis the single-item endpoint uses. The response reports each item as reconciled, skipped (e.g. unknown SKU), or errored (e.g. unknown unit), so a problem with one item does not fail the rest of the batch.\n\nEach correction is written to the item's inventory audit trail as a user correction, attributed to the caller.\n\nThis endpoint requires the permission: `items:create`.",
+        "description": "Reconciles inventory for multiple items by SKU in one call, the bulk equivalent of counting stock and correcting the books.\n\n`reconcile_type` controls whether each quantity is added to the item's current quantity (`addition`) or replaces it (`force`). The figure a `force` measures against is what is on hand net of demand nothing has covered, the same basis the single-item endpoint uses. Each quantity is converted from its row's unit into the item's base unit, and `previous_quantity` and `new_quantity` are reported in that base unit. A SKU listed twice applies each row in turn.\n\nThe response reports each row as reconciled, skipped (unknown SKU), or errored (unknown unit, or a unit outside the item's unit group), so a problem with one row does not fail the rest. Rows are written in batches of 50, each in its own transaction; a batch that cannot be written is rolled back whole and every row in it is reported in `errors`, while the batches before and after it still apply. Resubmit only the errored rows — in `addition` mode, resubmitting the whole request would apply the reconciled rows twice.\n\nAt most 1,000 rows per request, and a request body of at most 8 MB. Each correction is written to the item's inventory audit trail as a user correction, attributed to the caller.\n\nThis endpoint requires the permission: `items:create`.",
         "operationId": "bulk-reconcile-items",
         "requestBody": {
           "content": {
@@ -89493,7 +90110,7 @@
     },
     "/v1/catalog/materials": {
       "get": {
-        "description": "Returns a paginated list of materials, newest first.\n\n`q` matches against SKU and description, with closer SKU matches ranked first.\n\nThis endpoint requires the permissions: `materials:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of materials, newest first.\n\n`q` matches against SKU and description, with closer SKU matches ranked first.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `materials:read`.",
         "operationId": "list-materials",
         "parameters": [
           {
@@ -90001,7 +90618,7 @@
         "x-preview": true
       },
       "post": {
-        "description": "Creates a material together with the catalog item that carries its SKU, description, category, pricing, and attributes.\n\nInventory tracking for the new material starts at a zero on-hand quantity in the category's base unit. The item's consumption rate (`burn_rate`) also starts at zero and cannot be supplied here — it is derived from recorded consumption as production happens.\n\nThis endpoint requires the permissions: `materials:create`, `customers:update`, `suppliers:update`.",
+        "description": "Creates a material together with the catalog item that carries its SKU, description, category, pricing, and attributes.\n\nInventory tracking for the new material starts at a zero on-hand quantity in the category's base unit. The item's consumption rate (`burn_rate`) also starts at zero and cannot be supplied here — it is derived from recorded consumption as production happens.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `materials:create`.",
         "operationId": "create-material",
         "parameters": [
           {
@@ -90461,7 +91078,7 @@
     },
     "/v1/catalog/materials/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple materials for the account, matched by SKU. Validates and\nresolves synchronously, then writes asynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple materials for the account, matched by SKU. Validates and\nresolves synchronously, then writes asynchronously — 202 with a job to poll.\n\nAt most 1,000 materials and an 8 MB request body per call.",
         "operationId": "bulk-upsert-materials",
         "parameters": [
           {
@@ -90593,7 +91210,7 @@
     },
     "/v1/catalog/materials/{id}": {
       "delete": {
-        "description": "Deletes a material.\n\nThis is a soft delete: the material and the catalog item behind it stop being returned by other endpoints, but the records are retained. The response is the material as it stood immediately before deletion, and deleting an already-deleted material returns an error.\n\nThis endpoint requires the permissions: `materials:delete`, `customers:update`, `suppliers:update`.",
+        "description": "Deletes a material.\n\nThis is a soft delete: the material and the catalog item behind it stop being returned by other endpoints, but the records are retained. The response is the material as it stood immediately before deletion, and deleting an already-deleted material returns an error.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `materials:delete`.",
         "operationId": "delete-material",
         "parameters": [
           {
@@ -91000,7 +91617,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a material by ID.\n\nThis endpoint requires the permissions: `materials:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a material by ID.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `materials:read`.",
         "operationId": "retrieve-material",
         "parameters": [
           {
@@ -91431,7 +92048,7 @@
         "x-preview": true
       },
       "patch": {
-        "description": "Partially updates a material.\n\nFields not provided retain their current values. Only the cost side of pricing can be changed here; the selling price set at creation is not editable through this endpoint. Use the Change Item Category endpoint to move the material to a different category.\n\nThis endpoint requires the permissions: `materials:update`, `customers:update`, `suppliers:update`.",
+        "description": "Partially updates a material.\n\nFields not provided retain their current values. Only the cost side of pricing can be changed here; the selling price set at creation is not editable through this endpoint.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `materials:update`.",
         "operationId": "update-material",
         "parameters": [
           {
@@ -91488,7 +92105,8 @@
                   "value": "9.10",
                   "numerator_unit_id": "un_82bd37dae5po",
                   "denominator_unit_id": "un_82bd37dae5po"
-                }
+                },
+                "category_id": "ic_d06g9c6yc9ck"
               },
               "schema": {
                 "$ref": "#/components/schemas/UpdateMaterialRequest"
@@ -91892,7 +92510,7 @@
     },
     "/v1/catalog/parts": {
       "get": {
-        "description": "Returns a paginated list of parts for the current account, most recently created first.\n\nThe `q` search term matches the part's SKU or description. When it is supplied, the parts whose SKU matches it most closely are returned first, ordered by creation time within each level of match.\n\nThis endpoint requires the permissions: `parts:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of parts for the current account, most recently created first.\n\nThe `q` search term matches the part's SKU or description. When it is supplied, the parts whose SKU matches it most closely are returned first, ordered by creation time within each level of match.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `parts:read`.",
         "operationId": "list-parts",
         "parameters": [
           {
@@ -92350,7 +92968,7 @@
         "x-preview": true
       },
       "post": {
-        "description": "Creates a part with the specified SKU and category.\n\nInventory tracking for the new part starts at a zero on-hand quantity in the category's base unit.\n\nThis endpoint requires the permissions: `parts:create`, `customers:update`, `suppliers:update`.",
+        "description": "Creates a part with the specified SKU and category.\n\nInventory tracking for the new part starts at a zero on-hand quantity in the category's base unit.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `parts:create`.",
         "operationId": "create-part",
         "parameters": [
           {
@@ -92750,7 +93368,7 @@
     },
     "/v1/catalog/parts/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple parts for the account, matched by SKU, then writes\nasynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple parts for the account, matched by SKU, then writes\nasynchronously — 202 with a job to poll.\n\nAt most 1,000 parts and an 8 MB request body per call.",
         "operationId": "bulk-upsert-parts",
         "parameters": [
           {
@@ -92882,7 +93500,7 @@
     },
     "/v1/catalog/parts/{id}": {
       "delete": {
-        "description": "Deletes a part.\n\nThis is a soft delete: the part is marked deleted and no longer returned by other endpoints, but the record is retained. Deleting an already-deleted part returns an error.\n\nThis endpoint requires the permissions: `parts:delete`, `customers:update`, `suppliers:update`.",
+        "description": "Deletes a part.\n\nThis is a soft delete: the part is marked deleted and no longer returned by other endpoints, but the record is retained. Deleting an already-deleted part returns an error.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `parts:delete`.",
         "operationId": "delete-part",
         "parameters": [
           {
@@ -93239,7 +93857,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a part by ID.\n\nThis endpoint requires the permissions: `parts:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a part by ID.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `parts:read`.",
         "operationId": "retrieve-part",
         "parameters": [
           {
@@ -93620,7 +94238,7 @@
         "x-preview": true
       },
       "patch": {
-        "description": "Partially updates a part.\n\nFields not provided retain their current values. Only the SKU, description, and notes are editable here; the part's category and attributes are changed through the item endpoints.\n\nThis endpoint requires the permissions: `parts:update`, `customers:update`, `suppliers:update`.",
+        "description": "Partially updates a part.\n\nFields not provided retain their current values. The SKU, description, notes, and category are editable here; the part's attributes are changed through the item endpoints.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `parts:update`.",
         "operationId": "update-part",
         "parameters": [
           {
@@ -93662,7 +94280,8 @@
               "example": {
                 "sku": "BRG-6204-2RS",
                 "description": "Deep groove ball bearing, 20x47x14mm",
-                "notes": "Superseded by low-friction variant; keep for legacy assemblies."
+                "notes": "Superseded by low-friction variant; keep for legacy assemblies.",
+                "category_id": "ic_d06g9c6yc9ck"
               },
               "schema": {
                 "$ref": "#/components/schemas/UpdatePartRequest"
@@ -94016,7 +94635,7 @@
     },
     "/v1/catalog/product-lines": {
       "get": {
-        "description": "Returns a paginated list of product lines, newest first.\n\nCovers both the product lines your account owns and the shared system lines. The `q` search term is matched against the product line name.\n\nThis endpoint requires the permissions: `product_lines:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of product lines, newest first.\n\nCovers both the product lines your account owns and the shared system lines. The `q` search term is matched against the product line name.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `product_lines:read`.",
         "operationId": "list-product-lines",
         "parameters": [
           {
@@ -94587,7 +95206,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a single product line by ID.\n\nBoth the product lines your account owns and the shared system lines can be retrieved.\n\nThis endpoint requires the permissions: `product_lines:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a single product line by ID.\n\nBoth the product lines your account owns and the shared system lines can be retrieved.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `product_lines:read`.",
         "operationId": "retrieve-product-line",
         "parameters": [
           {
@@ -94961,7 +95580,7 @@
     },
     "/v1/catalog/products": {
       "get": {
-        "description": "Returns a paginated list of products for the target account, newest first.\n\nOnly products of type `sale` are listed — service, shipping, credit, return, and tax products are excluded and must be retrieved by ID. A request made by a customer-portal buyer always returns portal-visible products only, and its `customer_ids` filter is replaced with the buyer's own account, so the results reflect what that account is entitled to buy.\n\nThe `q` search term is matched against the SKU and description of each product's item; when it is supplied, products whose SKU matches are returned ahead of the rest.\n\nThis endpoint requires the permissions: `items:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of products for the target account, newest first.\n\nOnly products of type `sale` are listed — service, shipping, credit, return, and tax products are excluded and must be retrieved by ID. A request made by a customer-portal buyer always returns portal-visible products only, and its `customer_ids` filter is replaced with the buyer's own account, so the results reflect what that account is entitled to buy.\n\nThe `q` search term is matched against the SKU and description of each product's item; when it is supplied, products whose SKU matches are returned ahead of the rest.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `items:read`.",
         "operationId": "list-products",
         "parameters": [
           {
@@ -96113,7 +96732,7 @@
     },
     "/v1/catalog/products/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple products for the account, matched by SKU. Validates and\nresolves synchronously, then writes asynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple products for the account, matched by SKU. Validates and\nresolves synchronously, then writes asynchronously — 202 with a job to poll.\n\nAt most 1,000 products and an 8 MB request body per call.",
         "operationId": "bulk-upsert-products",
         "parameters": [
           {
@@ -96750,7 +97369,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a product by ID.\n\nThis endpoint requires the permissions: `items:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a product by ID.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `items:read`.",
         "operationId": "retrieve-product",
         "parameters": [
           {
@@ -97313,7 +97932,8 @@
                   "value": "219.00",
                   "numerator_unit_id": "un_82bd37dae5po",
                   "denominator_unit_id": "un_82bd37dae5po"
-                }
+                },
+                "category_id": "ic_d06g9c6yc9ck"
               },
               "schema": {
                 "$ref": "#/components/schemas/UpdateProductRequest"
@@ -101177,7 +101797,7 @@
     },
     "/v1/core/actions/email-record": {
       "post": {
-        "description": "Emails a record (invoice, sales order, or purchase order) to its configured recipients and marks the record as sent.\n\nDelivery is asynchronous: the endpoint returns `202 Accepted` once the email is queued, so a `202` means the send was accepted, not that it reached the recipients. If the record has no configured recipients the request still succeeds and nothing is sent; in that case a sales order or purchase order is also left unmarked, while an invoice is still marked as sent.\n\nThis endpoint requires the permissions: `invoices:read`, `sales_orders:read`, `purchase_orders:read`.",
+        "description": "Emails a record (invoice, sales order, or purchase order) to its configured recipients and marks the record as sent.\n\nDelivery is asynchronous: the endpoint returns `202 Accepted` once the email is queued, so a `202` means the send was accepted, not that it reached the recipients. If the record has no configured recipients the request still succeeds and nothing is sent; in that case a sales order or purchase order is also left unmarked, while an invoice is still marked as sent.\n\nAn `id` that is not one of the account's records of the given `type` answers `404`.\n\nThis endpoint requires the permissions: `invoices:read`, `sales_orders:read`, `purchase_orders:read`.",
         "operationId": "email-record",
         "requestBody": {
           "content": {
@@ -101888,7 +102508,7 @@
     },
     "/v1/core/audit-events": {
       "get": {
-        "description": "Returns a paginated list of audit events, newest first.\n\nResults cover every change where your account is either the acting account or the account that was acted upon, so a customer's or supplier's changes to your records appear alongside your own. The `q` parameter searches the resource type, action, resource ID, and originating request ID.\n\nThis endpoint requires the permission: `audit_events:read`.",
+        "description": "Returns a paginated list of audit events, newest first.\n\nResults cover every change where your account is either the acting account or the account that was acted upon, so a customer's or supplier's changes to your records appear alongside your own. The `q` parameter matches a resource ID, an originating request ID, a resource type or an action exactly; a type or action can be given as its code (`sales_order`) or its name (`Sales Order`).\n\nThis endpoint requires the permission: `audit_events:read`.",
         "operationId": "list-audit-events",
         "parameters": [
           {
@@ -102070,6 +102690,10 @@
                   "sales_totals",
                   "sales_breakdown",
                   "sales_invoice",
+                  "open_orders_summary",
+                  "open_order_product",
+                  "open_order",
+                  "open_order_line",
                   "new_customer",
                   "schedule_order_coverage",
                   "schedule_order_coverage_line",
@@ -102269,7 +102893,13 @@
                   "invoice_related",
                   "pick_related",
                   "pick_totals",
-                  "pick_stage_total"
+                  "pick_stage_total",
+                  "analyze_production_costs_response",
+                  "production_cost",
+                  "production_cost_totals",
+                  "production_cost_department",
+                  "production_cost_category",
+                  "production_cost_department_category"
                 ],
                 "type": "string"
               },
@@ -102418,6 +103048,10 @@
                 "sales_totals",
                 "sales_breakdown",
                 "sales_invoice",
+                "open_orders_summary",
+                "open_order_product",
+                "open_order",
+                "open_order_line",
                 "new_customer",
                 "schedule_order_coverage",
                 "schedule_order_coverage_line",
@@ -102617,7 +103251,13 @@
                 "invoice_related",
                 "pick_related",
                 "pick_totals",
-                "pick_stage_total"
+                "pick_stage_total",
+                "analyze_production_costs_response",
+                "production_cost",
+                "production_cost_totals",
+                "production_cost_department",
+                "production_cost_category",
+                "production_cost_department_category"
               ],
               "type": "string"
             }
@@ -103703,7 +104343,7 @@
     },
     "/v1/core/jobs/{id}": {
       "get": {
-        "description": "Returns a job by ID — poll the job named in a `202 Accepted` response's `Location` to observe its outcome.\nA completed export carries the link to its file on `export.url`.\n\nThis endpoint requires the permissions: `jobs:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a job by ID — poll the job named in a `202 Accepted` response's `Location` to observe its outcome.\nA completed export carries the link to its file on `export.url`.\n\nA customer or supplier portal reads only the jobs it started itself; any other job is reported as not found.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `jobs:read`.",
         "operationId": "retrieve-job",
         "parameters": [
           {
@@ -104068,6 +104708,7 @@
                   "missing_field",
                   "invalid_format",
                   "method_not_allowed",
+                  "request_too_large",
                   "resource_not_found",
                   "resource_exists",
                   "resource_conflict",
@@ -104117,6 +104758,7 @@
                   "missing_field",
                   "invalid_format",
                   "method_not_allowed",
+                  "request_too_large",
                   "resource_not_found",
                   "resource_exists",
                   "resource_conflict",
@@ -105143,6 +105785,10 @@
                   "sales_totals",
                   "sales_breakdown",
                   "sales_invoice",
+                  "open_orders_summary",
+                  "open_order_product",
+                  "open_order",
+                  "open_order_line",
                   "new_customer",
                   "schedule_order_coverage",
                   "schedule_order_coverage_line",
@@ -105342,7 +105988,13 @@
                   "invoice_related",
                   "pick_related",
                   "pick_totals",
-                  "pick_stage_total"
+                  "pick_stage_total",
+                  "analyze_production_costs_response",
+                  "production_cost",
+                  "production_cost_totals",
+                  "production_cost_department",
+                  "production_cost_category",
+                  "production_cost_department_category"
                 ],
                 "type": "string"
               },
@@ -106064,7 +106716,7 @@
     },
     "/v1/identity/account-users": {
       "get": {
-        "description": "Returns a paginated list of the users who belong to the account you are acting in.\n\nWhen the account you are acting in is a customer or supplier account you manage, this lists that account's users rather than your own team.\n\nThis endpoint requires the permissions: `team:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of the users who belong to the account you are acting in.\n\nWhen the account you are acting in is a customer or supplier account you manage, this lists that account's users rather than your own team, each with the `notification_types` you send them.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `team:read`.",
         "operationId": "list-account-users",
         "parameters": [
           {
@@ -106296,6 +106948,10 @@
                         "updated_at": "2026-05-10T00:23:00Z"
                       },
                       "is_commission_eligible": false,
+                      "notification_types": [
+                        "invoice",
+                        "order_acknowledgement"
+                      ],
                       "last_used_at": "2026-05-10T00:23:00Z",
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
@@ -106327,7 +106983,7 @@
         "x-preview": true
       },
       "post": {
-        "description": "Adds a user to the account you are acting in.\n\nIf no user with the given email or username exists, a new user is created; a user created with an email address is sent a welcome email containing a generated password, unless they are being added to a supplier account, since suppliers have no portal to sign in to. If a matching user already exists, that user is added to the account instead, and a user you previously removed is restored rather than duplicated. Adding a user to your own account consumes a seat and is rejected once your plan's seat limit is reached.\n\nWhen you add a user to a customer or supplier account that has its own OpenMRP subscription, the membership is created disabled and has to be activated before that user can sign in.\n\nThis endpoint requires the permissions: `team:create`, `customers:update`, `suppliers:update`.",
+        "description": "Adds a user to the account you are acting in.\n\nIf no user with the given email or username exists, a new user is created; a user created with an email address is sent a welcome email containing a generated password and a link to sign in, unless they are being added to a supplier account, since suppliers have no portal to sign in to. A user added to a customer account signs in through your customer portal, on its verified custom domain when you have one. If a matching user already exists, that user is added to the account instead, and a user you previously removed is restored rather than duplicated. Adding a user to your own account consumes a seat and is rejected once your plan's seat limit is reached.\n\nYou can add users to a customer or supplier account only while you manage it alone: an account that runs its own OpenMRP subscription, or that another account also has as a customer or supplier, manages its own users, and the request is refused.\n\nActing in a customer's account requires `customers:create`, and acting in a supplier's account requires `suppliers:create`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `team:create`.",
         "operationId": "create-account-user",
         "parameters": [
           {
@@ -106509,6 +107165,10 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "is_commission_eligible": false,
+                  "notification_types": [
+                    "invoice",
+                    "order_acknowledgement"
+                  ],
                   "last_used_at": "2026-05-10T00:23:00Z",
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -106540,7 +107200,7 @@
     },
     "/v1/identity/account-users/{id}": {
       "get": {
-        "description": "Returns an account user by ID.\n\nThe lookup is scoped to the account you are acting in, so an ID belonging to another account is reported as not found.\n\nThis endpoint requires the permissions: `team:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns an account user by ID.\n\nThe lookup is scoped to the account you are acting in, so an ID belonging to another account is reported as not found.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `team:read`.",
         "operationId": "retrieve-account-user",
         "parameters": [
           {
@@ -106707,6 +107367,10 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "is_commission_eligible": false,
+                  "notification_types": [
+                    "invoice",
+                    "order_acknowledgement"
+                  ],
                   "last_used_at": "2026-05-10T00:23:00Z",
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -106736,7 +107400,7 @@
         "x-preview": true
       },
       "patch": {
-        "description": "Partially updates an account user.\n\nOmitted fields are left unchanged. Profile fields (`name`, `email`, `username`) update the underlying user, which is shared across every account the user belongs to, so the change is visible everywhere that person works.\n\nThis endpoint requires the permissions: `team:update`, `customers:update`, `suppliers:update`.",
+        "description": "Partially updates an account user.\n\nOmitted fields are left unchanged. Profile fields (`name`, `email`, `username`) update the underlying user, which is shared across every account the user belongs to, so the change is visible everywhere that person works.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `team:update`.",
         "operationId": "update-account-user",
         "parameters": [
           {
@@ -106927,6 +107591,10 @@
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
                   "is_commission_eligible": false,
+                  "notification_types": [
+                    "invoice",
+                    "order_acknowledgement"
+                  ],
                   "last_used_at": "2026-05-10T00:23:00Z",
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -106958,7 +107626,7 @@
     },
     "/v1/identity/account-users/{id}/actions/activate": {
       "put": {
-        "description": "Activates a disabled or removed account user, restoring their access to the account you are acting in.\n\nReactivation consumes a seat, so the request fails if the account is at its seat limit. Activating an already-active user is a no-op.\n\nThis endpoint requires the permissions: `team:update`, `customers:update`, `suppliers:update`.",
+        "description": "Activates a disabled or removed account user, restoring their access to the account you are acting in.\n\nReactivating a user in your own account consumes a seat, so the request fails if your plan is at its seat limit; users of a customer or supplier account you manage take no seat. Activating an already-active user is a no-op.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `team:update`.",
         "operationId": "activate-account-user",
         "parameters": [
           {
@@ -107005,7 +107673,7 @@
     },
     "/v1/identity/account-users/{id}/actions/disable": {
       "put": {
-        "description": "Disables (locks) an account user.\n\nDisabled users cannot access the account and their active sessions are revoked, but the membership and its role assignment are kept so access can be restored with the activate action. Disabling frees the seat the user occupied. Admin users cannot be disabled, you cannot disable yourself, and removed users must be activated before they can be disabled. Disabling an already-disabled user is a no-op.\n\nThis endpoint requires the permissions: `team:update`, `customers:update`, `suppliers:update`.",
+        "description": "Disables (locks) an account user.\n\nDisabled users cannot access the account and their active sessions are revoked, but the membership and its role assignment are kept so access can be restored with the activate action. Disabling frees the seat the user occupied. Admin users cannot be disabled, you cannot disable yourself, and removed users must be activated before they can be disabled. Disabling an already-disabled user is a no-op.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `team:update`.",
         "operationId": "disable-account-user",
         "parameters": [
           {
@@ -107052,7 +107720,7 @@
     },
     "/v1/identity/account-users/{id}/actions/remove": {
       "put": {
-        "description": "Removes a user from the account you are acting in.\n\nRemoval is a soft delete: removed users are excluded from listings unless requested via `removed_scope`, they free the seat they occupied, and they can be restored with the activate action. Removing an already-removed user is a no-op. The user's profile itself is untouched, so their access to any other account they belong to is unaffected.\n\nThis endpoint requires the permissions: `team:delete`, `customers:update`, `suppliers:update`.",
+        "description": "Removes a user from the account you are acting in.\n\nRemoval is a soft delete: removed users are excluded from listings unless requested via `removed_scope`, they free the seat they occupied, and they can be restored with the activate action or by adding them again. Removing an already-removed user is a no-op. The user's profile itself is untouched, so their access to any other account they belong to is unaffected.\n\nActing in a customer's account requires `customers:delete`, and acting in a supplier's account requires `suppliers:delete`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `team:delete`.",
         "operationId": "remove-account-user",
         "parameters": [
           {
@@ -107099,7 +107767,7 @@
     },
     "/v1/identity/accounts/{id}/favicon": {
       "put": {
-        "description": "Uploads a customer-portal favicon.\n\nSend the image as the raw request body, not as multipart form data. Use a small square PNG (e.g. 32x32 or 64x64) for the best result in browser tabs. The uploaded image replaces any existing favicon and is shown on the account's customer portal. You can only upload a favicon for the account you are acting in.\n\nThis endpoint requires the permission: `self:update`.",
+        "description": "Uploads a customer-portal favicon.\n\nSend the image as the raw request body, not as multipart form data. Use a small square PNG (e.g. 32x32 or 64x64) for the best result in browser tabs. The uploaded image replaces any existing favicon and is shown on the account's customer portal. You can only upload a favicon for the account you are acting in.\n\nA body that is empty or not a PNG, JPEG, GIF, WebP, or ICO image is refused with a 400, and one over 10 MB with a 413; the existing favicon is kept either way.\n\nThis endpoint requires the permission: `self:update`.",
         "operationId": "upload-account-favicon",
         "parameters": [
           {
@@ -107108,14 +107776,6 @@
             "in": "path",
             "name": "id",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "Content type of the image (e.g., image/png).\n\nThe image is stored as `image/png` if this header is omitted, so set it to match the actual format you upload.",
-            "in": "header",
-            "name": "Content-Type",
             "schema": {
               "type": "string"
             }
@@ -108398,6 +109058,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -108605,6 +109269,10 @@
                       "updated_at": "2026-05-10T00:23:00Z"
                     },
                     "is_commission_eligible": false,
+                    "notification_types": [
+                      "invoice",
+                      "order_acknowledgement"
+                    ],
                     "last_used_at": "2026-05-10T00:23:00Z",
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
@@ -109013,6 +109681,10 @@
                 "sales_totals",
                 "sales_breakdown",
                 "sales_invoice",
+                "open_orders_summary",
+                "open_order_product",
+                "open_order",
+                "open_order_line",
                 "new_customer",
                 "schedule_order_coverage",
                 "schedule_order_coverage_line",
@@ -109212,7 +109884,13 @@
                 "invoice_related",
                 "pick_related",
                 "pick_totals",
-                "pick_stage_total"
+                "pick_stage_total",
+                "analyze_production_costs_response",
+                "production_cost",
+                "production_cost_totals",
+                "production_cost_department",
+                "production_cost_category",
+                "production_cost_department_category"
               ],
               "type": "string"
             }
@@ -109462,6 +110140,12 @@
                 "type": "group",
                 "participant_account_user_ids": [
                   "acus_e5zu8bde0z3h"
+                ],
+                "participants": [
+                  {
+                    "account_user_id": "acus_e5zu8bde0z3h",
+                    "role": "admin"
+                  }
                 ],
                 "group_id": "cvgp_wjlypugna7s4",
                 "title": "Order #1042 — shipping question",
@@ -116290,6 +116974,251 @@
         "x-preview": true
       }
     },
+    "/v1/messaging/messages/{id}/actions/reschedule": {
+      "post": {
+        "description": "Moves a message you scheduled to a new send time, optionally revising what it says, and returns it.\n\nThe message keeps its id and is sent once, at the new time; the time it had before no longer applies. You can only reschedule a message you scheduled yourself, and only until its send time arrives — once it is due, sent or canceled the request fails.\n\nThis endpoint requires the permission: `messaging:update`.",
+        "operationId": "reschedule-message",
+        "parameters": [
+          {
+            "description": "The id of the scheduled message.",
+            "example": "mg_fdny8633ebgw",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sub-objects to expand in the response. When omitted, sub-objects are returned as `null`.",
+            "example": [
+              "sender"
+            ],
+            "in": "query",
+            "name": "include[]",
+            "schema": {
+              "items": {
+                "enum": [
+                  "sender",
+                  "author",
+                  "resource",
+                  "attachments",
+                  "attachments.resource",
+                  "conversation",
+                  "conversation.participants",
+                  "conversation.last_message",
+                  "reply_to",
+                  "reply_to.sender",
+                  "reply_to.author",
+                  "reply_to.attachments",
+                  "agent_run"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "scheduled_at": "2026-03-02T14:00:00Z",
+                "body": "Reminder: the line goes down for maintenance at 6pm."
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleMessageRequest"
+              }
+            }
+          },
+          "description": "The request body for Reschedule Message"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "mg_fdny8633ebgw",
+                  "object": "chat_message",
+                  "kind": "chat",
+                  "status": "sent",
+                  "visibility": "internal",
+                  "conversation": {
+                    "id": "cv_w35z4ck68yq7",
+                    "object": "conversation",
+                    "type": "direct_message",
+                    "audience": "internal",
+                    "title": null,
+                    "workflow_status": null,
+                    "group": null,
+                    "status": "active",
+                    "legal_hold": "released",
+                    "assignee": null,
+                    "participants": {
+                      "object": "list",
+                      "page_info": {
+                        "next_page_url": null,
+                        "previous_page_url": null,
+                        "has_next_page": false,
+                        "has_prev_page": false
+                      },
+                      "data": [
+                        {
+                          "id": "cvpt_be2h3ul14cts",
+                          "object": "conversation_participant",
+                          "type": "user",
+                          "role": "member",
+                          "membership": "active",
+                          "notifications": "unmuted",
+                          "actor": {
+                            "id": "acus_e5zu8bde0z3h",
+                            "object": "actor",
+                            "type": "user",
+                            "name": "Jie Yan",
+                            "handle": null,
+                            "avatar_url": null,
+                            "role": null
+                          },
+                          "agent_trigger_policy": null,
+                          "agent_trigger_keywords": [],
+                          "read_cursor": {
+                            "object": "read_cursor",
+                            "sequence": 12,
+                            "message_id": null,
+                            "read_at": null
+                          }
+                        }
+                      ]
+                    },
+                    "topic": null,
+                    "unread": 2,
+                    "last_message_at": "2026-05-10T00:23:00Z",
+                    "last_message": {
+                      "id": "mg_fdny8633ebgw",
+                      "object": "chat_message",
+                      "kind": "chat",
+                      "status": "sent",
+                      "visibility": "internal",
+                      "conversation": null,
+                      "sequence": 42,
+                      "body": "Sounds good — shipping it today.",
+                      "subject": null,
+                      "sender": {
+                        "id": "acus_e5zu8bde0z3h",
+                        "object": "actor",
+                        "type": "user",
+                        "name": "Jie Yan",
+                        "handle": null,
+                        "avatar_url": null,
+                        "role": null
+                      },
+                      "author": null,
+                      "attachments": null,
+                      "reply_to": null,
+                      "resource": null,
+                      "channel": "message",
+                      "scheduled_at": null,
+                      "agent_run": null,
+                      "streaming_state": null,
+                      "client_message_id": null,
+                      "edited_at": null,
+                      "deleted_at": null,
+                      "created_at": "2026-05-10T00:00:00Z",
+                      "updated_at": "2026-05-10T00:23:00Z",
+                      "agent_run_failed": false,
+                      "agent_error_code": null
+                    },
+                    "created_at": "2026-05-10T00:00:00Z",
+                    "updated_at": "2026-05-10T00:23:00Z"
+                  },
+                  "sequence": 42,
+                  "body": "Sounds good — shipping it today.",
+                  "subject": null,
+                  "sender": {
+                    "id": "acus_e5zu8bde0z3h",
+                    "object": "actor",
+                    "type": "user",
+                    "name": "Jie Yan",
+                    "handle": null,
+                    "avatar_url": null,
+                    "role": null
+                  },
+                  "author": {
+                    "id": "acus_e5zu8bde0z3h",
+                    "object": "actor",
+                    "type": "user",
+                    "name": "Jie Yan",
+                    "handle": null,
+                    "avatar_url": null,
+                    "role": null
+                  },
+                  "attachments": {
+                    "object": "list",
+                    "page_info": {
+                      "next_page_url": null,
+                      "previous_page_url": null,
+                      "has_next_page": false,
+                      "has_prev_page": false
+                    },
+                    "data": [
+                      {
+                        "id": "mgah_v17axle2mcff",
+                        "object": "message_attachment",
+                        "kind": "image",
+                        "filename": "diagram.png",
+                        "content_type": "image/png",
+                        "size_bytes": 48213,
+                        "url": "https://chat-bucket.s3.amazonaws.com/chat/ac/cv/mgah/diagram.png?X-Amz-Signature=...",
+                        "resource": null,
+                        "created_at": "2026-05-10T00:00:00Z"
+                      }
+                    ]
+                  },
+                  "reply_to": null,
+                  "resource": {
+                    "id": "or_9lqo07quiwyb",
+                    "object": "entity",
+                    "type": "sales_order",
+                    "name": "Order #1042",
+                    "handle": null
+                  },
+                  "channel": "message",
+                  "scheduled_at": null,
+                  "agent_run": null,
+                  "streaming_state": null,
+                  "client_message_id": null,
+                  "edited_at": null,
+                  "deleted_at": null,
+                  "created_at": "2026-05-10T00:00:00Z",
+                  "updated_at": "2026-05-10T00:23:00Z",
+                  "agent_run_failed": false,
+                  "agent_error_code": null
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            },
+            "description": "Successful response for Reschedule Message"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Error response"
+          }
+        },
+        "summary": "Reschedule Message",
+        "tags": [
+          "Messages"
+        ],
+        "x-preview": true
+      }
+    },
     "/v1/messaging/notifications": {
       "get": {
         "description": "Lists the notifications addressed to the current user, newest first.\n\nThe feed is personal and scoped to the account being acted in, so it never includes another user's notifications. Callers with no user membership in that account, such as an API key, get an empty list rather than an error.\n\nThis endpoint requires the permission: `messaging:read`.",
@@ -116338,7 +117267,8 @@
                 "agent.alert",
                 "system.broadcast",
                 "customer.registered",
-                "production_run.updated"
+                "production_run.updated",
+                "invoice.payment_status_changed"
               ],
               "type": "string"
             }
@@ -117165,7 +118095,7 @@
     },
     "/v1/operations/carriers": {
       "get": {
-        "description": "Returns a paginated list of the carriers available to the current account.\n\nThis covers the carriers you have created plus the platform-provided system carriers that every account shares.\n\nThis endpoint requires the permissions: `carriers:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of the carriers available to the current account.\n\nThis covers the carriers you have created plus the platform-provided system carriers that every account shares.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `carriers:read`.",
         "operationId": "list-carriers",
         "parameters": [
           {
@@ -117452,7 +118382,7 @@
     },
     "/v1/operations/carriers/{carrier_id}/service-levels": {
       "get": {
-        "description": "Returns a paginated list of the service levels a carrier offers.\n\nUse this rather than the `service_levels` field on the carrier itself when a carrier has more than a handful of services, since that inline list is capped.\n\nThis endpoint requires the permissions: `carriers:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of the service levels a carrier offers.\n\nUse this rather than the `service_levels` field on the carrier itself when a carrier has more than a handful of services, since that inline list is capped.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `carriers:read`.",
         "operationId": "list-service-levels",
         "parameters": [
           {
@@ -117739,7 +118669,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a service level by ID.\n\nThis endpoint requires the permissions: `carriers:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a service level by ID.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `carriers:read`.",
         "operationId": "retrieve-service-level",
         "parameters": [
           {
@@ -117996,7 +118926,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a carrier by ID.\n\nThis endpoint requires the permissions: `carriers:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a carrier by ID.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `carriers:read`.",
         "operationId": "retrieve-carrier",
         "parameters": [
           {
@@ -120436,7 +121366,7 @@
     },
     "/v1/operations/inventory-change-logs/actions/export": {
       "get": {
-        "description": "Exports inventory change logs matching the provided filters as an Excel file.\n\nUnlike the list endpoint, results are not paginated — every matching change log is included in the download, newest first. The download is named for the date range you requested, using `all` in place of a bound you left open.\n\nThis endpoint requires the permission: `inventory_logs:read`.",
+        "description": "Exports inventory change logs matching the provided filters as an Excel file.\n\nUnlike the list endpoint, results are not paginated — every matching change log is included in the download, newest first. The download is named for the date range you requested, using `all` in place of a bound you left open.\n\nThis endpoint is deprecated: the file is built inside the request, so a wide window on a busy account can outlast the request timeout. Use `POST /v1/operations/inventory-change-logs/actions/export` instead, which builds the same file in the background and returns a job to poll.\n\nThis endpoint requires the permission: `inventory_logs:read`.",
         "operationId": "export-inventory-change-logs",
         "parameters": [
           {
@@ -120535,6 +121465,132 @@
           }
         },
         "summary": "Export Inventory Change Logs",
+        "tags": [
+          "Inventory Change Logs"
+        ],
+        "x-preview": true
+      },
+      "post": {
+        "description": "Starts an export of every inventory change log the filters select and returns the job that tracks it.\n\nPoll the job; once it completes, `export.url` links to the Excel file. The file has one row per change log, newest first, with the same columns as the synchronous export, and is named for the window you asked for — `inventory-change-logs-\u003cstarts_at\u003e-\u003cends_at\u003e.xlsx`, each bound as its UTC date and `all` in place of a bound you left open. A file with more change logs than one worksheet holds continues on further worksheets.\n\nThis endpoint requires the permission: `inventory_logs:read`.",
+        "operationId": "start-inventory-change-logs-export",
+        "parameters": [
+          {
+            "description": "Sub-objects to expand in the response. When omitted, sub-objects are returned as `null`.",
+            "example": [
+              "created_by"
+            ],
+            "in": "query",
+            "name": "include[]",
+            "schema": {
+              "items": {
+                "enum": [
+                  "created_by",
+                  "created_by.role"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "action_types": [
+                  "scan"
+                ],
+                "starts_at": "2026-01-01T00:00:00Z",
+                "ends_at": "2026-03-31T00:00:00Z"
+              },
+              "schema": {
+                "$ref": "#/components/schemas/StartInventoryChangeLogsExportRequest"
+              }
+            }
+          },
+          "description": "The request body for Start Inventory Change Logs Export"
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "jb_grz7cdpnz8jr",
+                  "object": "job",
+                  "type": "bulk_create",
+                  "resource_type": "production_run",
+                  "status": "completed",
+                  "created_by": null,
+                  "results": {
+                    "object": "list",
+                    "page_info": {
+                      "next_page_url": null,
+                      "previous_page_url": null,
+                      "has_next_page": false,
+                      "has_prev_page": false
+                    },
+                    "data": [
+                      {
+                        "object": "job_result",
+                        "index": 0,
+                        "status": "created",
+                        "resource": {
+                          "id": "prru_sglzcyflxk59",
+                          "object": "entity",
+                          "type": "production_run",
+                          "name": null,
+                          "handle": null
+                        },
+                        "sub_resources": {
+                          "object": "list",
+                          "page_info": {
+                            "next_page_url": null,
+                            "previous_page_url": null,
+                            "has_next_page": false,
+                            "has_prev_page": false
+                          },
+                          "data": [
+                            {
+                              "id": "bt_fuies8j4pk45",
+                              "object": "entity",
+                              "type": "batch",
+                              "name": null,
+                              "handle": null
+                            }
+                          ]
+                        },
+                        "error": null
+                      }
+                    ]
+                  },
+                  "error": null,
+                  "export": null,
+                  "started_at": "2026-05-10T00:00:00Z",
+                  "completed_at": "2026-05-10T00:00:00Z",
+                  "failed_at": null,
+                  "cancelled_at": null,
+                  "created_at": "2026-05-10T00:00:00Z",
+                  "updated_at": "2026-05-10T00:00:00Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful response for Start Inventory Change Logs Export"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Error response"
+          }
+        },
+        "summary": "Start Inventory Change Logs Export",
         "tags": [
           "Inventory Change Logs"
         ],
@@ -125152,7 +126208,7 @@
     },
     "/v1/operations/picks": {
       "get": {
-        "description": "Returns a paginated list of picks, soonest ship-by date first.\n\nThe `q` search term matches the pick number (which is the order number) and the customer PO number. To narrow by customer, use `customer_ids` rather than searching for a customer name.\n\nThis endpoint requires the permissions: `picks:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of picks, soonest ship-by date first.\n\nThe `q` search term matches the pick number (which is the order number) and the customer PO number. To narrow by customer, use `customer_ids` rather than searching for a customer name.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `picks:read`.",
         "operationId": "list-picks",
         "parameters": [
           {
@@ -125638,6 +126694,10 @@
                               "updated_at": "2026-05-10T00:23:00Z"
                             },
                             "is_commission_eligible": false,
+                            "notification_types": [
+                              "invoice",
+                              "order_acknowledgement"
+                            ],
                             "last_used_at": "2026-05-10T00:23:00Z",
                             "created_at": "2026-05-10T00:00:00Z",
                             "updated_at": "2026-05-10T00:23:00Z"
@@ -127585,6 +128645,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -129158,7 +130222,7 @@
     },
     "/v1/operations/picks/{id}/actions/pack": {
       "post": {
-        "description": "Packs a pick, creating a shipment from the picked lines.\n\nReturns `202 Accepted` with a job, because packing writes a shipment, one shipment line per packed pick line, and the requested shipping cases. Poll the job at the returned `Location`; once it reports `completed`, its first result carries the new shipment's `id`, with the shipment line and shipping case ids in `sub_resource_ids`. Every unpacked line with a picked quantity greater than zero is marked as packed and added to a new shipment in `packed` status, which inherits the sales order's carrier, service level, and shipping address. When a sales order line still has outstanding quantity afterward and no unpacked pick line is already open for it, a new zero-quantity pick line is created for the remainder, so packing a partial pick leaves the pick open for the next round. The pick is marked finished only once every one of its lines is packed.\n\nReturns a validation error if no line on the pick has a picked quantity greater than zero.\n\nThis endpoint requires the permission: `picks:update`.",
+        "description": "Packs a pick, creating a shipment from the picked lines.\n\nReturns `202 Accepted` with a job, because packing writes a shipment, one shipment line per packed pick line, and the requested shipping cases. Poll the job at the returned `Location`; once it reports `completed`, its first result carries the new shipment's `id`, with the shipment line and shipping case ids in `sub_resource_ids`. Every unpacked line with a picked quantity greater than zero is marked as packed and added to a new shipment in `packed` status, which inherits the sales order's carrier, service level, and shipping address. When a sales order line still has outstanding quantity afterward and no unpacked pick line is already open for it, a new zero-quantity pick line is created for the remainder, so packing a partial pick leaves the pick open for the next round. The pick is marked finished only once every one of its lines is packed.\n\nReturns a validation error if the pick is already finished or no line on the pick has a picked quantity greater than zero. Packs of the same pick run one at a time, so a second pack accepted alongside the first finds nothing left to pack and its job fails rather than shipping the lines twice.\n\nThis endpoint requires the permission: `picks:update`.",
         "operationId": "pack-pick",
         "parameters": [
           {
@@ -129292,7 +130356,7 @@
     },
     "/v1/operations/picks/{id}/actions/pick": {
       "put": {
-        "description": "Marks all lines on a pick as picked.\n\nSets each unpacked line's picked quantity to the quantity still outstanding on its sales order line, after accounting for what other pick lines for that order line have already picked. Lines that have already been packed are unaffected. Use this to fill in a full pick in one call instead of picking each line individually; nothing is shipped until the pick is packed.\n\nThis endpoint requires the permission: `picks:update`.",
+        "description": "Marks all lines on a pick as picked.\n\nSets each unpacked line's picked quantity to the quantity still outstanding on its sales order line, after accounting for what other pick lines for that order line have already picked, and never lowers a line: calling it again changes nothing, and an over-pick is kept as recorded. Lines that have already been packed, and every line of a finished pick, are unaffected. Use this to fill in a full pick in one call instead of picking each line individually; nothing is shipped until the pick is packed.\n\nThis endpoint requires the permission: `picks:update`.",
         "operationId": "pick-all-lines",
         "parameters": [
           {
@@ -129635,6 +130699,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -131551,6 +132619,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -133124,7 +134196,7 @@
     },
     "/v1/operations/picks/{pick_id}/lines/{id}": {
       "patch": {
-        "description": "Updates a pick line's picked quantity.\n\nUse this to record a short or partial pick; Pick Pick Line fills in the full outstanding quantity instead.\n\nThis endpoint requires the permission: `picks:update`.",
+        "description": "Updates a pick line's picked quantity.\n\nUse this to record a short or partial pick; Pick Pick Line fills in the full outstanding quantity instead.\n\nReturns a validation error if the line has already been packed, since its quantity is what the shipment carries.\n\nThis endpoint requires the permission: `picks:update`.",
         "operationId": "update-pick-line",
         "parameters": [
           {
@@ -134460,7 +135532,7 @@
     },
     "/v1/operations/picks/{pick_id}/lines/{id}/actions/pick": {
       "put": {
-        "description": "Marks a pick line as fully picked.\n\nSets the line's picked quantity to its sales order line's ordered quantity less everything already picked for that order line, including whatever this line had picked before the call. To record a short pick instead, set the quantity yourself with Update Pick Line. Has no effect on a line that has already been packed.\n\nThis endpoint requires the permission: `picks:update`.",
+        "description": "Marks a pick line as fully picked.\n\nSets the line's picked quantity to its sales order line's ordered quantity less what the order line's other pick lines hold, and never lowers it: picking a line again changes nothing, and an over-pick is kept as recorded. To record a short pick instead, set the quantity yourself with Update Pick Line. Has no effect on a line that has already been packed.\n\nThis endpoint requires the permission: `picks:update`.",
         "operationId": "pick-pick-line",
         "parameters": [
           {
@@ -139908,7 +140980,7 @@
     },
     "/v1/operations/production-schedules/{id}/actions/release-week": {
       "post": {
-        "description": "Turns one planned week into a production run.\n\nEach campaign in the week becomes one batch per planned lot, using the lot size the campaign was planned at. A 360-unit campaign at a 60-unit lot arrives on the floor as six batches, not one instruction to make 360; a quantity that is not a whole number of lots trails a single short lot at the end of the run.\n\nThe release is atomic. A run holding half a week's batches is worse than no run, because the missing half looks like work nobody was asked to do and attainment would count it as unplanned production.\n\nReleasing the same week twice fails rather than creating a second run. Each released line records the run now carrying it, and a line that is already released is never re-pointed.\n\nLots an earlier week already issued are carried forward rather than reissued. When a week fell short, the next plan asks for the shortfall — and the batches covering it are usually already printed and sitting on the floor. Those tickets are moved into this run and counted against the campaign, so only the genuinely new work is created. `carried_forward_batch_count` says how many arrived that way, and each one names the run it came off. Send `skip_carry_forward` to issue the whole week new instead.\n\nCancelled campaigns and campaigns planned at zero are left behind rather than released. A week that would produce an implausible number of batches is rejected outright, since that is far more likely to be a misconfigured lot size than a real week's work.\n\nThis endpoint requires the permissions: `production_schedules:update`, `production_runs:create`.",
+        "description": "Turns one planned week into a production run.\n\nEach campaign in the week becomes one batch per planned lot, using the lot size the campaign was planned at. A 360-unit campaign at a 60-unit lot arrives on the floor as six batches, not one instruction to make 360; a quantity that is not a whole number of lots trails a single short lot at the end of the run.\n\nThe release is atomic. A run holding half a week's batches is worse than no run, because the missing half looks like work nobody was asked to do and attainment would count it as unplanned production.\n\nReleasing the same week twice fails rather than creating a second run. Each released line records the run now carrying it, and a line that is already released is never re-pointed.\n\nLots an earlier week already issued are carried forward rather than reissued. When a week fell short, the next plan asks for the shortfall — and the batches covering it are usually already printed and sitting on the floor. Those tickets are moved into this run and counted against the campaign, so only the genuinely new work is created. `carried_forward_batch_count` says how many arrived that way, and each one names the run it came off. Send `skip_carry_forward` to issue the whole week new instead.\n\nCancelled campaigns and campaigns planned at zero are left behind rather than released. A week that would produce an implausible number of batches is rejected outright, since that is far more likely to be a misconfigured lot size than a real week's work.\n\nThis endpoint requires the permission: `production_schedules:update`.",
         "operationId": "release-production-schedule-week",
         "parameters": [
           {
@@ -140077,6 +141149,10 @@
                         "updated_at": "2026-05-10T00:23:00Z"
                       },
                       "is_commission_eligible": false,
+                      "notification_types": [
+                        "invoice",
+                        "order_acknowledgement"
+                      ],
                       "last_used_at": "2026-05-10T00:23:00Z",
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
@@ -143104,7 +144180,7 @@
     },
     "/v1/sales/account-prices": {
       "get": {
-        "description": "Returns a paginated list of account prices, newest first.\n\nThe search term matches the recipient customer's name or their customer number. Customer portal users always see only the prices that apply to their own account, whatever `recipient_account_id` is set to.\n\nThis endpoint requires the permissions: `discounts:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of account prices, newest first.\n\nThe search term matches the recipient customer's name or their customer number. Customer and supplier portal users always see only the prices that apply to their own account, whatever `recipient_account_id` is set to.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `discounts:read`.",
         "operationId": "list-account-prices",
         "parameters": [
           {
@@ -143500,6 +144576,10 @@
                               "updated_at": "2026-05-10T00:23:00Z"
                             },
                             "is_commission_eligible": false,
+                            "notification_types": [
+                              "invoice",
+                              "order_acknowledgement"
+                            ],
                             "last_used_at": "2026-05-10T00:23:00Z",
                             "created_at": "2026-05-10T00:00:00Z",
                             "updated_at": "2026-05-10T00:23:00Z"
@@ -144330,6 +145410,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -144954,7 +146038,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns an account price by ID.\n\nA customer portal user can only retrieve a price whose recipient is their own account or its parent; any other price is reported as not found.\n\nThis endpoint requires the permissions: `discounts:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns an account price by ID.\n\nA customer or supplier portal user can only retrieve a price whose recipient is their own account or its parent; any other price is reported as not found.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `discounts:read`.",
         "operationId": "retrieve-account-price",
         "parameters": [
           {
@@ -145314,6 +146398,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -146144,6 +147232,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -147001,7 +148093,7 @@
     },
     "/v1/sales/account-users/{id}/sales-targets/{target_id}": {
       "put": {
-        "description": "Creates or updates a sales rep's revenue goal at an ID you choose.\n\nIf no target with the given ID exists, one is created with the supplied dates, amount, and unit. If it already exists, only the amount value is updated — the dates and unit are left unchanged, so raising or lowering a goal mid-period is the intended use. The sales rep must be an active account user in your account, and the target ID must belong to that account, otherwise the request returns a not-found error.\n\nThis endpoint requires the permission: `sales_targets:update`.",
+        "description": "Creates or updates a sales rep's revenue goal at an ID you choose.\n\nIf no target with the given ID exists, one is created with the supplied dates, amount, and unit. If it already exists, only the amount value is updated — the dates and unit are left unchanged, so raising or lowering a goal mid-period is the intended use. The sales rep must be an active account user in your account, and an existing target must be filed under that rep, otherwise the request returns a not-found error.\n\nThis endpoint requires the permission: `sales_targets:update`.",
         "operationId": "upsert-sales-target",
         "parameters": [
           {
@@ -147112,7 +148204,7 @@
     },
     "/v1/sales/addresses": {
       "get": {
-        "description": "Returns a paginated list of addresses.\n\nAddresses belonging to the account you are acting in are returned newest first. The `q` search term matches the address name, street lines, city, state, postal code, and country.\n\nThis endpoint requires the permissions: `addresses:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of addresses.\n\nAddresses belonging to the account you are acting in are returned newest first. The `q` search term matches the address name, street lines, city, state, postal code, and country.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `addresses:read`.",
         "operationId": "list-addresses",
         "parameters": [
           {
@@ -147218,7 +148310,7 @@
         "x-preview": true
       },
       "post": {
-        "description": "Creates an address.\n\nThe address is saved to the account you are acting in, which may be your own account or a customer or supplier account you manage, and can then be used as a billing or shipping address on sales orders, invoices, and shipments.\n\nThis endpoint requires the permissions: `addresses:create`, `customers:update`, `suppliers:update`.",
+        "description": "Creates an address.\n\nThe address is saved to the account you are acting in, which may be your own account or a customer or supplier account you manage, and can then be used as a billing or shipping address on sales orders, invoices, and shipments.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `addresses:create`.",
         "operationId": "create-address",
         "requestBody": {
           "content": {
@@ -147294,7 +148386,7 @@
     },
     "/v1/sales/addresses/{id}": {
       "delete": {
-        "description": "Deletes an address.\n\nDeletion fails if the address is in use as a billing or shipping address on a sales order, invoice, or shipment, or as a default account address.\n\nThis endpoint requires the permissions: `addresses:delete`, `customers:update`, `suppliers:update`.",
+        "description": "Deletes an address.\n\nDeletion fails if the address is in use as a billing or shipping address on a sales order, invoice, or shipment, or as a default account address.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `addresses:delete`.",
         "operationId": "delete-address",
         "parameters": [
           {
@@ -147339,7 +148431,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Retrieves an address by ID.\n\nThis endpoint requires the permissions: `addresses:read`, `customers:read`, `suppliers:read`.",
+        "description": "Retrieves an address by ID.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `addresses:read`.",
         "operationId": "retrieve-address",
         "parameters": [
           {
@@ -147403,7 +148495,7 @@
         "x-preview": true
       },
       "patch": {
-        "description": "Partially updates an address.\n\nChanging a street, locality, state, postal code, or country field may replace the address's geolocation, so the geolocation `id` in the response can change.\n\nThis endpoint requires the permissions: `addresses:update`, `customers:update`, `suppliers:update`.",
+        "description": "Partially updates an address.\n\nChanging a street, locality, state, postal code, or country field may replace the address's geolocation, so the geolocation `id` in the response can change.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `addresses:update`.",
         "operationId": "update-address",
         "parameters": [
           {
@@ -147696,6 +148788,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -148415,6 +149511,10 @@
                             "updated_at": "2026-05-10T00:23:00Z"
                           },
                           "is_commission_eligible": false,
+                          "notification_types": [
+                            "invoice",
+                            "order_acknowledgement"
+                          ],
                           "last_used_at": "2026-05-10T00:23:00Z",
                           "created_at": "2026-05-10T00:00:00Z",
                           "updated_at": "2026-05-10T00:23:00Z"
@@ -148954,6 +150054,10 @@
                         "updated_at": "2026-05-10T00:23:00Z"
                       },
                       "is_commission_eligible": false,
+                      "notification_types": [
+                        "invoice",
+                        "order_acknowledgement"
+                      ],
                       "last_used_at": "2026-05-10T00:23:00Z",
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
@@ -149120,7 +150224,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a customer by ID.\n\nThis endpoint requires the permissions: `customers:read`, `suppliers:read`.",
+        "description": "Returns a customer by ID.\n\nA customer or supplier portal retrieves only its own account; any other customer is reported as not found.\n\nActing in a supplier's account requires `suppliers:read` instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `customers:read`.",
         "operationId": "retrieve-customer",
         "parameters": [
           {
@@ -149493,6 +150597,10 @@
                         "updated_at": "2026-05-10T00:23:00Z"
                       },
                       "is_commission_eligible": false,
+                      "notification_types": [
+                        "invoice",
+                        "order_acknowledgement"
+                      ],
                       "last_used_at": "2026-05-10T00:23:00Z",
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
@@ -150026,6 +151134,10 @@
                         "updated_at": "2026-05-10T00:23:00Z"
                       },
                       "is_commission_eligible": false,
+                      "notification_types": [
+                        "invoice",
+                        "order_acknowledgement"
+                      ],
                       "last_used_at": "2026-05-10T00:23:00Z",
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
@@ -150147,7 +151259,7 @@
     },
     "/v1/sales/customers/{id}/actions/merge": {
       "post": {
-        "description": "Merges one or more source customers into a target customer.\n\nSales orders, invoices, shipments, deliveries, and other transaction records from the source customers are reassigned to the target; price groups, product line access, addresses, and users are consolidated without duplicates; child accounts of the sources are re-parented to the target; the source customers are then deleted.\n\nThe target keeps its own name, number, default addresses, and default settings — none of those are copied over from the sources, and the sources' notification recipients are discarded rather than transferred.\n\nThis endpoint requires the permissions: `customers:update`, `customers:delete`.",
+        "description": "Merges one or more source customers into a target customer.\n\nSales orders, invoices, shipments, deliveries, and other transaction records from the source customers are reassigned to the target; price groups, product line access, addresses, and users are consolidated without duplicates; child accounts of the sources are re-parented to the target; the source customers are then deleted.\n\nThe target keeps its own name, number, default addresses, and default settings — none of those are copied over from the sources, and the sources' notification recipients are discarded rather than transferred.\n\nThis endpoint requires the permissions: `customers:update` and `customers:delete`.",
         "operationId": "merge-customers",
         "parameters": [
           {
@@ -150535,6 +151647,10 @@
                         "updated_at": "2026-05-10T00:23:00Z"
                       },
                       "is_commission_eligible": false,
+                      "notification_types": [
+                        "invoice",
+                        "order_acknowledgement"
+                      ],
                       "last_used_at": "2026-05-10T00:23:00Z",
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
@@ -150733,7 +151849,7 @@
     },
     "/v1/sales/order-discounts": {
       "get": {
-        "description": "Returns a paginated list of the order discounts defined for the current account, newest first.\n\nPass `q` to narrow the list to discounts whose name or code contains the search text.\n\nThis endpoint requires the permissions: `discounts:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of the order discounts defined for the current account, newest first.\n\nPass `q` to narrow the list to discounts whose name or code contains the search text.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `discounts:read`.",
         "operationId": "list-order-discounts",
         "parameters": [
           {
@@ -151296,7 +152412,7 @@
     },
     "/v1/sales/sales-orders": {
       "get": {
-        "description": "Returns a paginated list of sales orders for the current account, newest first.\n\nA free-text search term (`q`) is matched as an exact value against the order number and the customer purchase order number, and still respects the other filters. Customer accounts calling this endpoint only ever see their own orders.\n\nThis endpoint requires the permissions: `sales_orders:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of sales orders for the current account, newest first.\n\nA free-text search term (`q`) is matched as an exact value against the order number and the customer purchase order number, and still respects the other filters. A customer or supplier portal calling this endpoint only ever sees the orders its own account placed, whatever filters it sets.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `sales_orders:read`.",
         "operationId": "list-sales-orders",
         "parameters": [
           {
@@ -151417,7 +152533,7 @@
             }
           },
           {
-            "description": "Earliest order creation date to include, in `YYYY-MM-DD` format.",
+            "description": "Only include orders created on or after this date (`YYYY-MM-DD`, UTC). A full timestamp (RFC 3339) is also accepted, to bound the range at a local midnight.",
             "example": "2026-05-10T00:00:00Z",
             "in": "query",
             "name": "starts_at",
@@ -151426,7 +152542,7 @@
             }
           },
           {
-            "description": "Latest order creation date to include, in `YYYY-MM-DD` format.\n\nCompared against the creation timestamp at the start of that day, so orders created later on the end date itself are excluded; pass the following day to include them.",
+            "description": "Only include orders created at or before the start of this date (`YYYY-MM-DD`, UTC), so orders created later on the end date itself are excluded; pass the following day to include them. A full timestamp (RFC 3339) is also accepted and used as given.",
             "example": "2026-05-10T00:23:00Z",
             "in": "query",
             "name": "ends_at",
@@ -151855,6 +152971,10 @@
                               "updated_at": "2026-05-10T00:23:00Z"
                             },
                             "is_commission_eligible": false,
+                            "notification_types": [
+                              "invoice",
+                              "order_acknowledgement"
+                            ],
                             "last_used_at": "2026-05-10T00:23:00Z",
                             "created_at": "2026-05-10T00:00:00Z",
                             "updated_at": "2026-05-10T00:23:00Z"
@@ -153616,6 +154736,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -155793,7 +156917,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a sales order by ID.\n\nThis endpoint requires the permissions: `customers:read`, `suppliers:read`, `sales_orders:read`.",
+        "description": "Returns a sales order by ID.\n\nA customer or supplier portal retrieves only an order its own account placed; any other order is reported as not found.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `sales_orders:read`.",
         "operationId": "retrieve-sales-order",
         "parameters": [
           {
@@ -156191,6 +157315,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -157930,6 +159058,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -159614,6 +160746,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -161120,6 +162256,10 @@
                       "updated_at": "2026-05-10T00:23:00Z"
                     },
                     "is_commission_eligible": false,
+                    "notification_types": [
+                      "invoice",
+                      "order_acknowledgement"
+                    ],
                     "last_used_at": "2026-05-10T00:23:00Z",
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
@@ -161548,6 +162688,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -163232,6 +164376,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -165007,6 +166155,10 @@
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
                         "is_commission_eligible": false,
+                        "notification_types": [
+                          "invoice",
+                          "order_acknowledgement"
+                        ],
                         "last_used_at": "2026-05-10T00:23:00Z",
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
@@ -166405,7 +167557,7 @@
     },
     "/v1/sales/sales-orders/{id}/lines": {
       "post": {
-        "description": "Adds a line item to a sales order.\n\nThe new line is appended below the existing product lines, keeping the order's freight and discount lines at the bottom. When the order has already been issued, the line is added to its pick as outstanding work and the pick is reopened if it had been finished.\n\nThis endpoint requires the permissions: `customers:update`, `suppliers:update`, `sales_orders:update`.",
+        "description": "Adds a line item to a sales order.\n\nThe new line is appended below the existing product lines, keeping the order's freight and discount lines at the bottom. When the order has already been issued, the line is added to its pick as outstanding work and the pick is reopened if it had been finished.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `sales_orders:update`.",
         "operationId": "create-sales-order-line",
         "parameters": [
           {
@@ -167372,7 +168524,7 @@
     },
     "/v1/sales/sales-orders/{id}/lines/actions/reorder": {
       "post": {
-        "description": "Reorders the product lines on a sales order to match the sequence supplied.\n\nThe lines are renumbered from `1` in the given order. Discount and freight lines always stay at the bottom of the list regardless of the sequence given here.\n\nThis endpoint requires the permissions: `customers:update`, `suppliers:update`, `sales_orders:update`.",
+        "description": "Reorders the product lines on a sales order to match the sequence supplied.\n\nThe lines are renumbered from `1` in the given order. Discount and freight lines always stay at the bottom of the list regardless of the sequence given here.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `sales_orders:update`.",
         "operationId": "reorder-sales-order-lines",
         "parameters": [
           {
@@ -167435,7 +168587,7 @@
     },
     "/v1/sales/sales-orders/{id}/lines/{line_id}": {
       "delete": {
-        "description": "Deletes a sales order line and its pick lines.\n\nA line cannot be removed once it has been packed onto a shipment, or once the order is fulfilled, and removing one from an order that is already completed or has a shipped shipment requires an admin. The remaining lines are renumbered so the sequence stays contiguous, and if this was the last line left to pick, the order's pick is deleted and the order falls back to `estimate` with its reserved inventory released.\n\nThis endpoint requires the permissions: `customers:update`, `suppliers:update`, `sales_orders:update`.",
+        "description": "Deletes a sales order line and its pick lines.\n\nA line cannot be removed once it has been packed onto a shipment, or once the order is fulfilled, and removing one from an order that is already completed or has a shipped shipment requires an admin. The remaining lines are renumbered so the sequence stays contiguous, and if this was the last line left to pick, the order's pick is deleted and the order falls back to `estimate` with its reserved inventory released.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `sales_orders:update`.",
         "operationId": "delete-sales-order-line",
         "parameters": [
           {
@@ -167490,7 +168642,7 @@
         "x-preview": true
       },
       "patch": {
-        "description": "Partially updates a sales order line item.\n\nChanging the quantity flows through to fulfillment: the order's pick is reconciled against what is still outstanding — reopening it when the new quantity leaves work to do, or dropping the surplus pick line and finishing it when everything ordered is already packed. Shipment and invoice lines that still carry the full previously ordered quantity follow the new value, while partial ones keep the amount that actually moved.\n\nThis endpoint requires the permissions: `customers:update`, `suppliers:update`, `sales_orders:update`.",
+        "description": "Partially updates a sales order line item.\n\nChanging the quantity flows through to fulfillment: the order's pick is reconciled against what is still outstanding — reopening it when the new quantity leaves work to do, or dropping the surplus pick line and finishing it when everything ordered is already packed. Shipment and invoice lines that still carry the full previously ordered quantity follow the new value, while partial ones keep the amount that actually moved.\n\nActing in a customer's account requires `customers:update`, and acting in a supplier's account requires `suppliers:update`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `sales_orders:update`.",
         "operationId": "update-sales-order-line",
         "parameters": [
           {
@@ -168470,7 +169622,7 @@
     },
     "/v1/sales/volume-discounts": {
       "get": {
-        "description": "Returns a paginated list of volume discounts, newest first.\n\nThe search term matches the discount name, the name of a customer group it is scoped to, or the name of a product line it is scoped to. Customer portal users see only discounts with no customer-group restriction plus those scoped to a group their own account belongs to.\n\nThis endpoint requires the permissions: `discounts:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a paginated list of volume discounts, newest first.\n\nThe search term matches the discount name, the name of a customer group it is scoped to, or the name of a product line it is scoped to. Customer and supplier portal users see only discounts with no customer-group restriction plus those scoped to a group their own account belongs to.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `discounts:read`.",
         "operationId": "list-volume-discounts",
         "parameters": [
           {
@@ -168750,7 +169902,7 @@
         "x-preview": true
       },
       "get": {
-        "description": "Returns a volume discount by ID.\n\nThis endpoint requires the permissions: `discounts:read`, `customers:read`, `suppliers:read`.",
+        "description": "Returns a volume discount by ID.\n\nA customer or supplier portal user retrieves only a discount its own listing carries: one with no customer-group restriction, or one scoped to a group its account belongs to. Any other discount is reported as not found.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `discounts:read`.",
         "operationId": "retrieve-volume-discount",
         "parameters": [
           {
