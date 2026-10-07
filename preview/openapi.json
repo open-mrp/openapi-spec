@@ -13308,11 +13308,19 @@
               }
             ],
             "description": "Unit price override.\n\nHonored only for internal users; for customer accounts it is ignored and the price is calculated server-side."
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key-value pairs to store on the line for your own references, such as its ID in another system.\n\nUp to 50 keys. Keys are up to 40 characters and cannot contain `[` or `]`; values are strings up to 500 characters, and an empty string is stored as one. A key sent as `null` is not stored.",
+            "type": "object"
           }
         },
         "required": [
           "product_id",
-          "quantity"
+          "quantity",
+          "metadata"
         ],
         "type": "object"
       },
@@ -13354,12 +13362,20 @@
               }
             ],
             "description": "Unit price override.\n\nWhen omitted, the line is priced server-side from the product's pricing rules (customer price, unit-conversion and volume discounts, account-price overrides) — the same pricing applied when the order is created. An explicit value is honored only for internal users. The unit cost is always resolved from the product and never taken from the request."
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key-value pairs to store on the line for your own references, such as its ID in another system.\n\nUp to 50 keys. Keys are up to 40 characters and cannot contain `[` or `]`; values are strings up to 500 characters, and an empty string is stored as one. A key sent as `null` is not stored.",
+            "type": "object"
           }
         },
         "required": [
           "product_id",
           "product_sku",
-          "quantity"
+          "quantity",
+          "metadata"
         ],
         "type": "object"
       },
@@ -13535,12 +13551,20 @@
               "$ref": "#/components/schemas/SalesOrderEmailContactInput"
             },
             "type": "array"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key-value pairs to store on the order for your own references, such as its ID in another system.\n\nUp to 50 keys. Keys are up to 40 characters and cannot contain `[` or `]`; values are strings up to 500 characters, and an empty string is stored as one. A key sent as `null` is not stored.",
+            "type": "object"
           }
         },
         "required": [
           "buyer_account_id",
           "priority_code",
-          "lines"
+          "lines",
+          "metadata"
         ],
         "type": "object"
       },
@@ -33977,6 +34001,9 @@
                           "completion": 0
                         }
                       },
+                      "metadata": {
+                        "edi_line_item_id": "00010"
+                      },
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
                     },
@@ -35295,6 +35322,9 @@
                     "amount": "0.000000000000000000000000000000",
                     "completion": 0
                   }
+                },
+                "metadata": {
+                  "edi_line_item_id": "00010"
                 },
                 "created_at": "2026-05-10T00:00:00Z",
                 "updated_at": "2026-05-10T00:23:00Z"
@@ -40558,6 +40588,9 @@
                         "completion": 0
                       }
                     },
+                    "metadata": {
+                      "edi_line_item_id": "00010"
+                    },
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
                   }
@@ -40615,6 +40648,10 @@
                 "transit_source": "carrier_lane",
                 "calendar_adjustment_days": 2,
                 "estimated_delivery_date": null
+              },
+              "metadata": {
+                "edi_partner": "acme",
+                "edi_po": "81078093"
               },
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -41545,6 +41582,9 @@
                   "amount": "0.000000000000000000000000000000",
                   "completion": 0
                 }
+              },
+              "metadata": {
+                "edi_line_item_id": "00010"
               },
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -51456,6 +51496,9 @@
                       "completion": 0
                     }
                   },
+                  "metadata": {
+                    "edi_line_item_id": "00010"
+                  },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
@@ -53411,6 +53454,9 @@
                         "completion": 0
                       }
                     },
+                    "metadata": {
+                      "edi_line_item_id": "00010"
+                    },
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
@@ -54737,6 +54783,9 @@
                 "completion": 0
               }
             },
+            "metadata": {
+              "edi_line_item_id": "00010"
+            },
             "created_at": "2026-05-10T00:00:00Z",
             "updated_at": "2026-05-10T00:23:00Z"
           },
@@ -56028,6 +56077,9 @@
                   "amount": "0.000000000000000000000000000000",
                   "completion": 0
                 }
+              },
+              "metadata": {
+                "edi_line_item_id": "00010"
               },
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
@@ -69728,6 +69780,9 @@
                     "completion": 0
                   }
                 },
+                "metadata": {
+                  "edi_line_item_id": "00010"
+                },
                 "created_at": "2026-05-10T00:00:00Z",
                 "updated_at": "2026-05-10T00:23:00Z"
               }
@@ -69785,6 +69840,10 @@
             "transit_source": "carrier_lane",
             "calendar_adjustment_days": 2,
             "estimated_delivery_date": null
+          },
+          "metadata": {
+            "edi_partner": "acme",
+            "edi_po": "81078093"
           },
           "created_at": "2026-05-10T00:00:00Z",
           "updated_at": "2026-05-10T00:23:00Z"
@@ -71525,6 +71584,9 @@
                       "completion": 0
                     }
                   },
+                  "metadata": {
+                    "edi_line_item_id": "00010"
+                  },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
                 }
@@ -71612,6 +71674,13 @@
             },
             "nullable": true
           },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key-value pairs you attach to the order for your own references, such as its ID in another system.",
+            "type": "object"
+          },
           "created_at": {
             "description": "Creation timestamp.",
             "format": "date-time",
@@ -71653,6 +71722,7 @@
           "first_ship_at",
           "expired_at",
           "commitment",
+          "metadata",
           "created_at",
           "updated_at"
         ],
@@ -72552,6 +72622,9 @@
               "amount": "0.000000000000000000000000000000",
               "completion": 0
             }
+          },
+          "metadata": {
+            "edi_line_item_id": "00010"
           },
           "created_at": "2026-05-10T00:00:00Z",
           "updated_at": "2026-05-10T00:23:00Z"
@@ -73496,6 +73569,13 @@
             "nullable": true,
             "x-expandable": true
           },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key-value pairs you attach to the line for your own references, such as its ID in another system.",
+            "type": "object"
+          },
           "created_at": {
             "description": "Creation timestamp.",
             "format": "date-time",
@@ -73519,6 +73599,7 @@
           "unit_price",
           "unit_cost",
           "totals",
+          "metadata",
           "created_at",
           "updated_at"
         ],
@@ -80099,6 +80180,14 @@
               }
             ],
             "description": "Internal cost per unit, used to derive line profitability.\n\nRounded to the nearest cent."
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key-value pairs to store on the line, merged into the ones it already has.\n\nKeys left out are kept, so `{}` changes nothing. Setting a key to `null` removes it; an empty string is stored as a value. Sending `metadata: null` removes every key. An object holds at most 50 keys. Keys are up to 40 characters and cannot contain `[` or `]`; values are up to 500 characters.",
+            "nullable": true,
+            "type": "object"
           }
         },
         "type": "object"
@@ -80257,6 +80346,14 @@
               "$ref": "#/components/schemas/SalesOrderEmailContactInput"
             },
             "type": "array"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key-value pairs to store on the order, merged into the ones it already has.\n\nKeys left out are kept, so `{}` changes nothing. Setting a key to `null` removes it; an empty string is stored as a value. Sending `metadata: null` removes every key. An object holds at most 50 keys. Keys are up to 40 characters and cannot contain `[` or `]`; values are up to 500 characters.",
+            "nullable": true,
+            "type": "object"
           }
         },
         "type": "object"
@@ -128213,6 +128310,9 @@
                                   "completion": 0
                                 }
                               },
+                              "metadata": {
+                                "edi_line_item_id": "00010"
+                              },
                               "created_at": "2026-05-10T00:00:00Z",
                               "updated_at": "2026-05-10T00:23:00Z"
                             },
@@ -130163,6 +130263,9 @@
                               "amount": "0.000000000000000000000000000000",
                               "completion": 0
                             }
+                          },
+                          "metadata": {
+                            "edi_line_item_id": "00010"
                           },
                           "created_at": "2026-05-10T00:00:00Z",
                           "updated_at": "2026-05-10T00:23:00Z"
@@ -132218,6 +132321,9 @@
                               "completion": 0
                             }
                           },
+                          "metadata": {
+                            "edi_line_item_id": "00010"
+                          },
                           "created_at": "2026-05-10T00:00:00Z",
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
@@ -134138,6 +134244,9 @@
                               "completion": 0
                             }
                           },
+                          "metadata": {
+                            "edi_line_item_id": "00010"
+                          },
                           "created_at": "2026-05-10T00:00:00Z",
                           "updated_at": "2026-05-10T00:23:00Z"
                         },
@@ -135498,6 +135607,9 @@
                         "completion": 0
                       }
                     },
+                    "metadata": {
+                      "edi_line_item_id": "00010"
+                    },
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
@@ -136801,6 +136913,9 @@
                         "completion": 0
                       }
                     },
+                    "metadata": {
+                      "edi_line_item_id": "00010"
+                    },
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
                   },
@@ -138103,6 +138218,9 @@
                         "amount": "0.000000000000000000000000000000",
                         "completion": 0
                       }
+                    },
+                    "metadata": {
+                      "edi_line_item_id": "00010"
                     },
                     "created_at": "2026-05-10T00:00:00Z",
                     "updated_at": "2026-05-10T00:23:00Z"
@@ -154223,6 +154341,9 @@
                                 "completion": 0
                               }
                             },
+                            "metadata": {
+                              "edi_line_item_id": "00010"
+                            },
                             "created_at": "2026-05-10T00:00:00Z",
                             "updated_at": "2026-05-10T00:23:00Z"
                           }
@@ -154280,6 +154401,10 @@
                         "transit_source": "carrier_lane",
                         "calendar_adjustment_days": 2,
                         "estimated_delivery_date": null
+                      },
+                      "metadata": {
+                        "edi_partner": "acme",
+                        "edi_po": "81078093"
                       },
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
@@ -155988,6 +156113,9 @@
                             "completion": 0
                           }
                         },
+                        "metadata": {
+                          "edi_line_item_id": "00010"
+                        },
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
                       }
@@ -156045,6 +156173,10 @@
                     "transit_source": "carrier_lane",
                     "calendar_adjustment_days": 2,
                     "estimated_delivery_date": null
+                  },
+                  "metadata": {
+                    "edi_partner": "acme",
+                    "edi_po": "81078093"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -158567,6 +158699,9 @@
                             "completion": 0
                           }
                         },
+                        "metadata": {
+                          "edi_line_item_id": "00010"
+                        },
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
                       }
@@ -158624,6 +158759,10 @@
                     "transit_source": "carrier_lane",
                     "calendar_adjustment_days": 2,
                     "estimated_delivery_date": null
+                  },
+                  "metadata": {
+                    "edi_partner": "acme",
+                    "edi_po": "81078093"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -160310,6 +160449,9 @@
                             "completion": 0
                           }
                         },
+                        "metadata": {
+                          "edi_line_item_id": "00010"
+                        },
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
                       }
@@ -160367,6 +160509,10 @@
                     "transit_source": "carrier_lane",
                     "calendar_adjustment_days": 2,
                     "estimated_delivery_date": null
+                  },
+                  "metadata": {
+                    "edi_partner": "acme",
+                    "edi_po": "81078093"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -161998,6 +162144,9 @@
                             "completion": 0
                           }
                         },
+                        "metadata": {
+                          "edi_line_item_id": "00010"
+                        },
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
                       }
@@ -162055,6 +162204,10 @@
                     "transit_source": "carrier_lane",
                     "calendar_adjustment_days": 2,
                     "estimated_delivery_date": null
+                  },
+                  "metadata": {
+                    "edi_partner": "acme",
+                    "edi_po": "81078093"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -163940,6 +164093,9 @@
                             "completion": 0
                           }
                         },
+                        "metadata": {
+                          "edi_line_item_id": "00010"
+                        },
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
                       }
@@ -163997,6 +164153,10 @@
                     "transit_source": "carrier_lane",
                     "calendar_adjustment_days": 2,
                     "estimated_delivery_date": null
+                  },
+                  "metadata": {
+                    "edi_partner": "acme",
+                    "edi_po": "81078093"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -165628,6 +165788,9 @@
                             "completion": 0
                           }
                         },
+                        "metadata": {
+                          "edi_line_item_id": "00010"
+                        },
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
                       }
@@ -165685,6 +165848,10 @@
                     "transit_source": "carrier_lane",
                     "calendar_adjustment_days": 2,
                     "estimated_delivery_date": null
+                  },
+                  "metadata": {
+                    "edi_partner": "acme",
+                    "edi_po": "81078093"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -167407,6 +167574,9 @@
                             "completion": 0
                           }
                         },
+                        "metadata": {
+                          "edi_line_item_id": "00010"
+                        },
                         "created_at": "2026-05-10T00:00:00Z",
                         "updated_at": "2026-05-10T00:23:00Z"
                       }
@@ -167464,6 +167634,10 @@
                     "transit_source": "carrier_lane",
                     "calendar_adjustment_days": 2,
                     "estimated_delivery_date": null
+                  },
+                  "metadata": {
+                    "edi_partner": "acme",
+                    "edi_po": "81078093"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -168493,6 +168667,9 @@
                       "amount": "0.000000000000000000000000000000",
                       "completion": 0
                     }
+                  },
+                  "metadata": {
+                    "edi_line_item_id": "00010"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
@@ -169591,6 +169768,9 @@
                       "amount": "0.000000000000000000000000000000",
                       "completion": 0
                     }
+                  },
+                  "metadata": {
+                    "edi_line_item_id": "00010"
                   },
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
