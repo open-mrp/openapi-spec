@@ -3698,6 +3698,10 @@
             "enum": [
               "create_artifact",
               "read_doc",
+              "search_docs",
+              "describe_api_operation",
+              "search_source",
+              "read_source",
               "fetch_url",
               "send_email",
               "draft_reply"
@@ -3925,7 +3929,8 @@
             ],
             "endpoint_tool_review": {
               "create_account_group": true
-            }
+            },
+            "max_steps": 30
           },
           "tools": {
             "object": "list",
@@ -4088,7 +4093,8 @@
               ],
               "endpoint_tool_review": {
                 "create_account_group": true
-              }
+              },
+              "max_steps": 30
             },
             "nullable": true,
             "x-expandable": true
@@ -4184,7 +4190,8 @@
           ],
           "endpoint_tool_review": {
             "create_account_group": true
-          }
+          },
+          "max_steps": 30
         },
         "properties": {
           "object": {
@@ -4247,6 +4254,11 @@
             },
             "description": "Per-endpoint-tool human-review overrides, keyed by tool slug.\n\nWhen an entry is `true`, the run pauses in `awaiting_approval` each time the agent calls that endpoint-tool until it is approved via the Continue Agent Run endpoint. Slugs absent from the map do not require review.",
             "type": "object"
+          },
+          "max_steps": {
+            "description": "Maximum model calls the agent may make in one turn before it must stop and summarize.\n\nWhen the limit is reached, tools are disabled and the agent answers with what it accomplished, what remains, and what it is missing. `null` means the default: 30 for chat and manual runs, 40 for scheduled and event-driven runs.",
+            "nullable": true,
+            "type": "integer"
           }
         },
         "required": [
@@ -4256,7 +4268,8 @@
           "temperature",
           "trigger_config",
           "endpoint_tool_slugs",
-          "endpoint_tool_review"
+          "endpoint_tool_review",
+          "max_steps"
         ],
         "type": "object"
       },
@@ -4509,7 +4522,8 @@
               ],
               "endpoint_tool_review": {
                 "create_account_group": true
-              }
+              },
+              "max_steps": 30
             },
             "tools": {
               "object": "list",
@@ -4808,7 +4822,8 @@
                 ],
                 "endpoint_tool_review": {
                   "create_account_group": true
-                }
+                },
+                "max_steps": 30
               },
               "tools": {
                 "object": "list",
@@ -8861,6 +8876,10 @@
             },
             "description": "Per-endpoint-tool human-review overrides, keyed by tool slug.\n\nSet a slug to `true` to require human approval before the agent may execute that endpoint-tool; the run pauses in `awaiting_approval` until approved via the Continue Agent Run endpoint. Slugs omitted from the map do not require review.",
             "type": "object"
+          },
+          "max_steps": {
+            "description": "Maximum model calls the agent may make in one turn before it must stop and summarize, from 1 to 60.\n\nWhen the limit is reached, tools are disabled and the agent answers with what it accomplished, what remains, and what it is missing. Omit to use the default: 30 for chat and manual runs, 40 for scheduled and event-driven runs.",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -11442,7 +11461,7 @@
             "type": "array"
           },
           "role_id": {
-            "description": "ID of the role that defines the permissions the agent operates with.\n\nEvery API call the agent makes is authorized against this role, so it bounds what the agent can see and change. An agent created without a role cannot execute — its runs fail immediately — so attach one before triggering it.",
+            "description": "ID of the role that defines the permissions the agent operates with.\n\nEvery API call the agent makes is authorized against this role, so it bounds what the agent can see and change. An agent created without a role cannot execute — its runs fail immediately — so attach one before triggering it.\n\nUnless you are an admin, the role may grant only permissions you hold yourself and may not be an admin role; otherwise the request fails with a `403` on `role_id`.",
             "type": "string"
           }
         },
@@ -17546,7 +17565,8 @@
               ],
               "endpoint_tool_review": {
                 "create_account_group": true
-              }
+              },
+              "max_steps": 30
             },
             "tools": {
               "object": "list",
@@ -17713,7 +17733,8 @@
                 ],
                 "endpoint_tool_review": {
                   "create_account_group": true
-                }
+                },
+                "max_steps": 30
               },
               "tools": {
                 "object": "list",
@@ -23880,7 +23901,8 @@
                 ],
                 "endpoint_tool_review": {
                   "create_account_group": true
-                }
+                },
+                "max_steps": 30
               },
               "tools": {
                 "object": "list",
@@ -24158,7 +24180,8 @@
                   ],
                   "endpoint_tool_review": {
                     "create_account_group": true
-                  }
+                  },
+                  "max_steps": 30
                 },
                 "tools": {
                   "object": "list",
@@ -27403,7 +27426,8 @@
                   ],
                   "endpoint_tool_review": {
                     "create_account_group": true
-                  }
+                  },
+                  "max_steps": 30
                 },
                 "tools": {
                   "object": "list",
@@ -46381,7 +46405,8 @@
                   ],
                   "endpoint_tool_review": {
                     "create_account_group": true
-                  }
+                  },
+                  "max_steps": 30
                 },
                 "tools": {
                   "object": "list",
@@ -77735,6 +77760,10 @@
             "enum": [
               "create_artifact",
               "read_doc",
+              "search_docs",
+              "describe_api_operation",
+              "search_source",
+              "read_source",
               "fetch_url",
               "send_email",
               "draft_reply"
@@ -78728,7 +78757,7 @@
             "type": "array"
           },
           "role_id": {
-            "description": "ID of the role that defines the permissions the agent operates with.\n\nSend `null` to detach the role; omit to leave it unchanged. An agent with no role cannot execute, so detaching the role makes its runs fail immediately.",
+            "description": "ID of the role that defines the permissions the agent operates with.\n\nSend `null` to detach the role; omit to leave it unchanged. An agent with no role cannot execute, so detaching the role makes its runs fail immediately.\n\nUnless you are an admin, the role the agent ends up with — the one you send, or its current role when you omit this — may grant only permissions you hold yourself and may not be an admin role; otherwise the request fails with a `403` on `role_id`.",
             "nullable": true,
             "type": "string"
           }
@@ -82383,7 +82412,8 @@
                         ],
                         "endpoint_tool_review": {
                           "create_account_group": true
-                        }
+                        },
+                        "max_steps": 30
                       },
                       "tools": {
                         "object": "list",
@@ -82567,7 +82597,8 @@
                     ],
                     "endpoint_tool_review": {
                       "create_account_group": true
-                    }
+                    },
+                    "max_steps": 30
                   },
                   "tools": {
                     "object": "list",
@@ -82771,7 +82802,8 @@
                     ],
                     "endpoint_tool_review": {
                       "create_account_group": true
-                    }
+                    },
+                    "max_steps": 30
                   },
                   "tools": {
                     "object": "list",
@@ -82941,7 +82973,8 @@
                     ],
                     "endpoint_tool_review": {
                       "create_account_group": true
-                    }
+                    },
+                    "max_steps": 30
                   },
                   "tools": {
                     "object": "list",
@@ -83113,7 +83146,8 @@
                     ],
                     "endpoint_tool_review": {
                       "create_account_group": true
-                    }
+                    },
+                    "max_steps": 30
                   },
                   "tools": {
                     "object": "list",
@@ -83698,7 +83732,8 @@
                           ],
                           "endpoint_tool_review": {
                             "create_account_group": true
-                          }
+                          },
+                          "max_steps": 30
                         },
                         "tools": {
                           "object": "list",
@@ -83924,7 +83959,7 @@
         "x-preview": true
       },
       "post": {
-        "description": "Starts a new run of the specified agent.\n\nThe run is created in the `pending` status and executed asynchronously; poll Retrieve Agent Run to follow its progress. Any agent can be started this way regardless of how it is normally triggered, and the resulting run is always recorded with `trigger_type` `manual`.\n\nThis endpoint requires the permission: `agent_runs:create`.",
+        "description": "Starts a new run of the specified agent.\n\nThe run is created in the `pending` status and executed asynchronously; poll Retrieve Agent Run to follow its progress. Any agent can be started this way regardless of how it is normally triggered, and the resulting run is always recorded with `trigger_type` `manual`.\n\nThis endpoint requires the permissions: `agent_runs:create`, `agents:read` and `agent_runs:read`.",
         "operationId": "trigger-agent-run",
         "parameters": [
           {
@@ -84030,7 +84065,8 @@
                       ],
                       "endpoint_tool_review": {
                         "create_account_group": true
-                      }
+                      },
+                      "max_steps": 30
                     },
                     "tools": {
                       "object": "list",
@@ -84360,7 +84396,8 @@
                       ],
                       "endpoint_tool_review": {
                         "create_account_group": true
-                      }
+                      },
+                      "max_steps": 30
                     },
                     "tools": {
                       "object": "list",
@@ -84688,7 +84725,8 @@
                       ],
                       "endpoint_tool_review": {
                         "create_account_group": true
-                      }
+                      },
+                      "max_steps": 30
                     },
                     "tools": {
                       "object": "list",
@@ -85029,7 +85067,8 @@
                       ],
                       "endpoint_tool_review": {
                         "create_account_group": true
-                      }
+                      },
+                      "max_steps": 30
                     },
                     "tools": {
                       "object": "list",
@@ -85357,7 +85396,8 @@
                       ],
                       "endpoint_tool_review": {
                         "create_account_group": true
-                      }
+                      },
+                      "max_steps": 30
                     },
                     "tools": {
                       "object": "list",
@@ -86770,7 +86810,7 @@
     },
     "/v1/catalog/item-categories/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple item categories for the account, matched by name\n(case-insensitive), then writes asynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple item categories for the account, matched by name\n(case-insensitive), then writes asynchronously — 202 with a job to poll.\n\nThis endpoint requires the permissions: `item_categories:create` and `item_categories:update`.",
         "operationId": "bulk-upsert-item-categories",
         "parameters": [
           {
@@ -91133,7 +91173,7 @@
     },
     "/v1/catalog/materials/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple materials for the account, matched by SKU. Validates and\nresolves synchronously, then writes asynchronously — 202 with a job to poll.\n\nAt most 1,000 materials and an 8 MB request body per call.",
+        "description": "Creates or updates multiple materials for the account, matched by SKU. Validates and\nresolves synchronously, then writes asynchronously — 202 with a job to poll.\n\nAt most 1,000 materials and an 8 MB request body per call.\n\nThis endpoint requires the permissions: `materials:create` and `materials:update`.",
         "operationId": "bulk-upsert-materials",
         "parameters": [
           {
@@ -93423,7 +93463,7 @@
     },
     "/v1/catalog/parts/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple parts for the account, matched by SKU, then writes\nasynchronously — 202 with a job to poll.\n\nAt most 1,000 parts and an 8 MB request body per call.",
+        "description": "Creates or updates multiple parts for the account, matched by SKU, then writes\nasynchronously — 202 with a job to poll.\n\nAt most 1,000 parts and an 8 MB request body per call.\n\nThis endpoint requires the permissions: `parts:create` and `parts:update`.",
         "operationId": "bulk-upsert-parts",
         "parameters": [
           {
@@ -95083,7 +95123,7 @@
     },
     "/v1/catalog/product-lines/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple product lines for the account, matched by name\n(case-insensitive), then writes asynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple product lines for the account, matched by name\n(case-insensitive), then writes asynchronously — 202 with a job to poll.\n\nThis endpoint requires the permissions: `product_lines:create` and `product_lines:update`.",
         "operationId": "bulk-upsert-product-lines",
         "parameters": [
           {
@@ -96787,7 +96827,7 @@
     },
     "/v1/catalog/products/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple products for the account, matched by SKU. Validates and\nresolves synchronously, then writes asynchronously — 202 with a job to poll.\n\nAt most 1,000 products and an 8 MB request body per call.",
+        "description": "Creates or updates multiple products for the account, matched by SKU. Validates and\nresolves synchronously, then writes asynchronously — 202 with a job to poll.\n\nAt most 1,000 products and an 8 MB request body per call.\n\nThis endpoint requires the permissions: `items:create` and `items:update`.",
         "operationId": "bulk-upsert-products",
         "parameters": [
           {
@@ -99199,7 +99239,7 @@
     },
     "/v1/catalog/properties/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple properties and their attributes for the account, matched by\nname (case-insensitive), then writes asynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple properties and their attributes for the account, matched by\nname (case-insensitive), then writes asynchronously — 202 with a job to poll.\n\nThis endpoint requires the permissions: `properties:create` and `properties:update`.",
         "operationId": "bulk-upsert-properties",
         "parameters": [
           {
@@ -100305,7 +100345,7 @@
     },
     "/v1/catalog/unit-groups/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple unit groups for the account, matched by name\n(case-insensitive), then writes asynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple unit groups for the account, matched by name\n(case-insensitive), then writes asynchronously — 202 with a job to poll.\n\nThis endpoint requires the permissions: `unit_groups:create` and `unit_groups:update`.",
         "operationId": "bulk-upsert-unit-groups",
         "parameters": [
           {
@@ -101492,7 +101532,7 @@
     },
     "/v1/catalog/units/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple units of measure for the account, matched by name or\nabbreviation, then writes asynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple units of measure for the account, matched by name or\nabbreviation, then writes asynchronously — 202 with a job to poll.\n\nThis endpoint requires the permissions: `units:create` and `units:update`.",
         "operationId": "bulk-upsert-units",
         "parameters": [
           {
@@ -114700,7 +114740,8 @@
                           ],
                           "endpoint_tool_review": {
                             "create_account_group": true
-                          }
+                          },
+                          "max_steps": 30
                         },
                         "tools": {
                           "object": "list",
@@ -114897,7 +114938,8 @@
                       ],
                       "endpoint_tool_review": {
                         "create_account_group": true
-                      }
+                      },
+                      "max_steps": 30
                     },
                     "tools": {
                       "object": "list",
@@ -115128,7 +115170,8 @@
                       ],
                       "endpoint_tool_review": {
                         "create_account_group": true
-                      }
+                      },
+                      "max_steps": 30
                     },
                     "tools": {
                       "object": "list",
@@ -115332,7 +115375,8 @@
                       ],
                       "endpoint_tool_review": {
                         "create_account_group": true
-                      }
+                      },
+                      "max_steps": 30
                     },
                     "tools": {
                       "object": "list",
@@ -122439,7 +122483,7 @@
     },
     "/v1/operations/locations/actions/bulk-upsert": {
       "post": {
-        "description": "Creates or updates multiple locations for the account, matched by name\n(case-insensitive), then writes asynchronously — 202 with a job to poll.",
+        "description": "Creates or updates multiple locations for the account, matched by name\n(case-insensitive), then writes asynchronously — 202 with a job to poll.\n\nThis endpoint requires the permissions: `locations:create` and `locations:update`.",
         "operationId": "bulk-upsert-locations",
         "parameters": [
           {
