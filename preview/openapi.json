@@ -67863,13 +67863,13 @@
             "type": "string"
           },
           "request_body": {
-            "description": "The JSON body the request was sent with.\n\nSensitive values such as passwords, tokens, and secrets are redacted before the body is stored. Bodies larger than 256 KB are not stored in full; a small marker object with `_truncated` set to `true` is stored in their place. Encoded as a JSON value (object, array, string, number, boolean, or null), not a JSON-encoded string.",
+            "description": "The JSON body the request was sent with.\n\nSensitive values such as passwords, tokens, and secrets are redacted before the body is stored. Bodies larger than 8 MiB are not stored in full; a small marker object with `_truncated` set to `true` is stored in their place. Encoded as a JSON value (object, array, string, number, boolean, or null), not a JSON-encoded string.",
             "nullable": true,
             "type": "object",
             "x-expandable": true
           },
           "response_body": {
-            "description": "The JSON body OpenMRP responded with.\n\nSensitive values such as generated API key secrets are redacted before the body is stored. Bodies larger than 256 KB are not stored in full; a small marker object with `_truncated` set to `true` is stored in their place. Encoded as a JSON value (object, array, string, number, boolean, or null), not a JSON-encoded string.",
+            "description": "The JSON body OpenMRP responded with.\n\nSensitive values such as generated API key secrets are redacted before the body is stored. Bodies larger than 8 MiB are not stored in full; a small marker object with `_truncated` set to `true` is stored in their place. Encoded as a JSON value (object, array, string, number, boolean, or null), not a JSON-encoded string.",
             "nullable": true,
             "type": "object",
             "x-expandable": true
