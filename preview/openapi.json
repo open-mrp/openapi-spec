@@ -2987,6 +2987,7 @@
               "demand_override",
               "demand_override_type",
               "machine_downtime_reason",
+              "machine_item_scan_suggestion",
               "production_schedule_preview",
               "production_schedule_regenerate_preview",
               "production_schedule",
@@ -7025,6 +7026,7 @@
               "demand_override",
               "demand_override_type",
               "machine_downtime_reason",
+              "machine_item_scan_suggestion",
               "production_schedule_preview",
               "production_schedule_regenerate_preview",
               "production_schedule",
@@ -11736,6 +11738,7 @@
               "demand_override",
               "demand_override_type",
               "machine_downtime_reason",
+              "machine_item_scan_suggestion",
               "production_schedule_preview",
               "production_schedule_regenerate_preview",
               "production_schedule",
@@ -18226,6 +18229,7 @@
               "demand_override",
               "demand_override_type",
               "machine_downtime_reason",
+              "machine_item_scan_suggestion",
               "production_schedule_preview",
               "production_schedule_regenerate_preview",
               "production_schedule",
@@ -21541,7 +21545,8 @@
               "bulk_create",
               "bulk_upsert",
               "export",
-              "pack_pick"
+              "pack_pick",
+              "ship_shipment"
             ],
             "type": "string"
           },
@@ -21652,6 +21657,7 @@
               "demand_override",
               "demand_override_type",
               "machine_downtime_reason",
+              "machine_item_scan_suggestion",
               "production_schedule_preview",
               "production_schedule_regenerate_preview",
               "production_schedule",
@@ -31027,6 +31033,7 @@
                 "demand_override",
                 "demand_override_type",
                 "machine_downtime_reason",
+                "machine_item_scan_suggestion",
                 "production_schedule_preview",
                 "production_schedule_regenerate_preview",
                 "production_schedule",
@@ -36250,6 +36257,7 @@
                 "excluded_item_count": 4,
                 "constraint_machine_count": 6,
                 "measured_batch_count": 1240,
+                "configured_item_count": 18,
                 "machines_without_step": 1,
                 "changeover_slope_minutes": 2.5,
                 "average_inputs_added": 3.2,
@@ -59017,6 +59025,7 @@
             "excluded_item_count": 4,
             "constraint_machine_count": 6,
             "measured_batch_count": 1240,
+            "configured_item_count": 18,
             "machines_without_step": 1,
             "changeover_slope_minutes": 2.5,
             "average_inputs_added": 3.2,
@@ -61395,6 +61404,7 @@
             "excluded_item_count": 4,
             "constraint_machine_count": 6,
             "measured_batch_count": 1240,
+            "configured_item_count": 18,
             "machines_without_step": 1,
             "changeover_slope_minutes": 2.5,
             "average_inputs_added": 3.2,
@@ -75625,7 +75635,11 @@
             "type": "integer"
           },
           "measured_batch_count": {
-            "description": "Batches found on those machines in the demand window.\n\nZero means nothing has been scanned there, which is why a plan can be empty even with machines configured.",
+            "description": "Batches found on those machines in the demand window, used for run rates and costs.",
+            "type": "integer"
+          },
+          "configured_item_count": {
+            "description": "Distinct SKUs the participating machines are configured to run.\n\nZero with machines present means the plan is empty because runnable SKUs have not been set up yet.",
             "type": "integer"
           },
           "machines_without_step": {
@@ -75715,6 +75729,7 @@
           "excluded_item_count",
           "constraint_machine_count",
           "measured_batch_count",
+          "configured_item_count",
           "machines_without_step",
           "changeover_slope_minutes",
           "average_inputs_added",
@@ -76487,6 +76502,7 @@
               "demand_override",
               "demand_override_type",
               "machine_downtime_reason",
+              "machine_item_scan_suggestion",
               "production_schedule_preview",
               "production_schedule_regenerate_preview",
               "production_schedule",
@@ -76907,6 +76923,7 @@
               "demand_override",
               "demand_override_type",
               "machine_downtime_reason",
+              "machine_item_scan_suggestion",
               "production_schedule_preview",
               "production_schedule_regenerate_preview",
               "production_schedule",
@@ -82227,7 +82244,7 @@
   "info": {
     "description": "API for OpenMRP services",
     "title": "OpenMRP API",
-    "version": "1.0.forge-preview.8"
+    "version": "1.0.forge-preview.9"
   },
   "openapi": "3.0.0",
   "paths": {
@@ -102768,6 +102785,7 @@
                   "demand_override",
                   "demand_override_type",
                   "machine_downtime_reason",
+                  "machine_item_scan_suggestion",
                   "production_schedule_preview",
                   "production_schedule_regenerate_preview",
                   "production_schedule",
@@ -103126,6 +103144,7 @@
                 "demand_override",
                 "demand_override_type",
                 "machine_downtime_reason",
+                "machine_item_scan_suggestion",
                 "production_schedule_preview",
                 "production_schedule_regenerate_preview",
                 "production_schedule",
@@ -105863,6 +105882,7 @@
                   "demand_override",
                   "demand_override_type",
                   "machine_downtime_reason",
+                  "machine_item_scan_suggestion",
                   "production_schedule_preview",
                   "production_schedule_regenerate_preview",
                   "production_schedule",
@@ -109759,6 +109779,7 @@
                 "demand_override",
                 "demand_override_type",
                 "machine_downtime_reason",
+                "machine_item_scan_suggestion",
                 "production_schedule_preview",
                 "production_schedule_regenerate_preview",
                 "production_schedule",
@@ -126307,7 +126328,7 @@
     },
     "/v1/operations/picks": {
       "get": {
-        "description": "Returns a paginated list of picks, soonest ship-by date first.\n\nThe `q` search term matches the pick number (which is the order number) and the customer PO number. To narrow by customer, use `customer_ids` rather than searching for a customer name.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `picks:read`.",
+        "description": "Returns a paginated list of picks, soonest ship-by date first.\n\nThe `q` search term matches the start of the pick number (which is the order number) and of the customer PO number, ignoring case; send `q_match=contains` to match anywhere in them. A term of three or more characters also matches anywhere in the customer's name and customer number. To narrow by customer, use `customer_ids` rather than searching for a customer name.\n\nActing in a customer's account requires `customers:read`, and acting in a supplier's account requires `suppliers:read`, instead of the permission this endpoint requires in your own account.\n\nThis endpoint requires the permission: `picks:read`.",
         "operationId": "list-picks",
         "parameters": [
           {
@@ -126421,6 +126442,19 @@
               "enum": [
                 "ship_by_date",
                 "created_at"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "How `q` is matched against the pick number and the customer PO number. Defaults to `prefix`.\n\n- `prefix`: `q` matches the start of the pick number and of the customer PO number.\n- `contains`: `q` matches anywhere in the pick number and the customer PO number. Slower on accounts with many picks.\n\nA `q` of one or two characters matches the start of the pick number only, whichever mode is sent.",
+            "example": "prefix",
+            "in": "query",
+            "name": "q_match",
+            "schema": {
+              "enum": [
+                "prefix",
+                "contains"
               ],
               "type": "string"
             }
@@ -138961,6 +138995,7 @@
                         "excluded_item_count": 4,
                         "constraint_machine_count": 6,
                         "measured_batch_count": 1240,
+                        "configured_item_count": 18,
                         "machines_without_step": 1,
                         "changeover_slope_minutes": 2.5,
                         "average_inputs_added": 3.2,
@@ -139209,6 +139244,7 @@
                     "excluded_item_count": 4,
                     "constraint_machine_count": 6,
                     "measured_batch_count": 1240,
+                    "configured_item_count": 18,
                     "machines_without_step": 1,
                     "changeover_slope_minutes": 2.5,
                     "average_inputs_added": 3.2,
@@ -139551,6 +139587,7 @@
                     "excluded_item_count": 4,
                     "constraint_machine_count": 6,
                     "measured_batch_count": 1240,
+                    "configured_item_count": 18,
                     "machines_without_step": 1,
                     "changeover_slope_minutes": 2.5,
                     "average_inputs_added": 3.2,
@@ -139705,6 +139742,7 @@
                     "excluded_item_count": 4,
                     "constraint_machine_count": 6,
                     "measured_batch_count": 1240,
+                    "configured_item_count": 18,
                     "machines_without_step": 1,
                     "changeover_slope_minutes": 2.5,
                     "average_inputs_added": 3.2,
@@ -139997,6 +140035,7 @@
                     "excluded_item_count": 4,
                     "constraint_machine_count": 6,
                     "measured_batch_count": 1240,
+                    "configured_item_count": 18,
                     "machines_without_step": 1,
                     "changeover_slope_minutes": 2.5,
                     "average_inputs_added": 3.2,
@@ -140244,6 +140283,7 @@
                     "excluded_item_count": 4,
                     "constraint_machine_count": 6,
                     "measured_batch_count": 1240,
+                    "configured_item_count": 18,
                     "machines_without_step": 1,
                     "changeover_slope_minutes": 2.5,
                     "average_inputs_added": 3.2,
@@ -140643,6 +140683,7 @@
                     "excluded_item_count": 4,
                     "constraint_machine_count": 6,
                     "measured_batch_count": 1240,
+                    "configured_item_count": 18,
                     "machines_without_step": 1,
                     "changeover_slope_minutes": 2.5,
                     "average_inputs_added": 3.2,
@@ -140903,6 +140944,7 @@
                     "excluded_item_count": 4,
                     "constraint_machine_count": 6,
                     "measured_batch_count": 1240,
+                    "configured_item_count": 18,
                     "machines_without_step": 1,
                     "changeover_slope_minutes": 2.5,
                     "average_inputs_added": 3.2,
