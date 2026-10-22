@@ -600,6 +600,7 @@
           "name": "My Stripe Integration",
           "provider": "stripe",
           "status": "active",
+          "monthly_spend_limit": null,
           "created_at": "2026-05-10T00:00:00Z",
           "updated_at": "2026-05-10T00:23:00Z"
         },
@@ -620,11 +621,12 @@
             "type": "string"
           },
           "provider": {
-            "description": "Integration provider code.\n\n- `stripe`: Stripe payment processing.\n- `shippo`: Shippo shipping and label generation.\n- `hubspot`: HubSpot CRM.",
+            "description": "Integration provider code.\n\n- `stripe`: Stripe payment processing.\n- `shippo`: Shippo shipping and label generation.\n- `hubspot`: HubSpot CRM.\n- `openrouter`: OpenRouter, the LLM gateway that serves agent runs.",
             "enum": [
               "stripe",
               "shippo",
-              "hubspot"
+              "hubspot",
+              "openrouter"
             ],
             "type": "string"
           },
@@ -635,6 +637,15 @@
               "inactive"
             ],
             "type": "string"
+          },
+          "monthly_spend_limit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "Most the provider may spend for the account in a UTC calendar month, or `null` for no limit.\n\nOnly `openrouter` integrations take a limit. Agent runs stop starting once OpenRouter reports this much spent this month; a run already underway finishes its current turn.",
+            "nullable": true
           },
           "created_at": {
             "description": "Creation timestamp.",
@@ -653,6 +664,7 @@
           "name",
           "provider",
           "status",
+          "monthly_spend_limit",
           "created_at",
           "updated_at"
         ],
@@ -3065,6 +3077,7 @@
               "oauth_status_response",
               "stripe_publishable_key",
               "stripe_status",
+              "openrouter_usage",
               "healthcheck",
               "agent_definition_config",
               "trigger_config",
@@ -7085,6 +7098,7 @@
               "oauth_status_response",
               "stripe_publishable_key",
               "stripe_status",
+              "openrouter_usage",
               "healthcheck",
               "agent_definition_config",
               "trigger_config",
@@ -11211,17 +11225,26 @@
             "type": "string"
           },
           "provider": {
-            "description": "Integration provider code.\n\n- `stripe`: Stripe payment processing.\n- `shippo`: Shippo shipping and label generation.\n- `hubspot`: HubSpot CRM.",
+            "description": "Integration provider code.\n\n- `stripe`: Stripe payment processing.\n- `shippo`: Shippo shipping and label generation.\n- `hubspot`: HubSpot CRM.\n- `openrouter`: OpenRouter, the LLM gateway that serves agent runs.",
             "enum": [
               "stripe",
               "shippo",
-              "hubspot"
+              "hubspot",
+              "openrouter"
             ],
             "type": "string"
           },
           "credentials": {
-            "description": "JSON string containing the provider's credentials.\n\nRequired keys depend on the provider:\n\n- `stripe`: `private_key` (`sk_...`), `publishable_key` (`pk_...`), and `webhook_secret` (`whsec_...`).\n- `shippo`: `api_key` (`shippo_live_...` or `shippo_test_...`).\n- `hubspot`: `access_token` (`pat-...`).\n\nFor Stripe and Shippo, sandbox accounts must supply test keys and production accounts must supply live keys; credentials that do not match are rejected. HubSpot tokens make no such distinction.",
+            "description": "JSON string containing the provider's credentials.\n\nRequired keys depend on the provider:\n\n- `stripe`: `private_key` (`sk_...`), `publishable_key` (`pk_...`), and `webhook_secret` (`whsec_...`).\n- `shippo`: `api_key` (`shippo_live_...` or `shippo_test_...`).\n- `hubspot`: `access_token` (`pat-...`).\n- `openrouter`: `api_key` (`sk-or-...`).\n\nFor Stripe and Shippo, sandbox accounts must supply test keys and production accounts must supply live keys; credentials that do not match are rejected. HubSpot and OpenRouter keys make no such distinction.",
             "type": "string"
+          },
+          "monthly_spend_limit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInput"
+              }
+            ],
+            "description": "Most the provider may spend for the account in a UTC calendar month. Only `openrouter` takes a limit, in `usd`.\n\nOmit it to leave an existing integration's limit as it is; a new integration then has no limit."
           }
         },
         "required": [
@@ -11592,7 +11615,7 @@
             "type": "string"
           },
           "topic_resource_type": {
-            "description": "The type of business record to anchor this conversation to.\n\nAn anchored conversation is returned when conversations are listed for that record, which is how a discussion shows up on an order or invoice.",
+            "description": "The type of business record to anchor this conversation to.\n\nAn anchored conversation is returned when conversations are listed for that record, which is how a discussion shows up on an order or invoice.\n\nAnchor a group to another `conversation` to start a new topic with the same people, or to an `agent_definition` to start a new chat with that agent.",
             "enum": [
               "account",
               "actor",
@@ -11778,6 +11801,7 @@
               "oauth_status_response",
               "stripe_publishable_key",
               "stripe_status",
+              "openrouter_usage",
               "healthcheck",
               "agent_definition_config",
               "trigger_config",
@@ -18250,6 +18274,7 @@
               "oauth_status_response",
               "stripe_publishable_key",
               "stripe_status",
+              "openrouter_usage",
               "healthcheck",
               "agent_definition_config",
               "trigger_config",
@@ -21659,6 +21684,7 @@
               "oauth_status_response",
               "stripe_publishable_key",
               "stripe_status",
+              "openrouter_usage",
               "healthcheck",
               "agent_definition_config",
               "trigger_config",
@@ -22301,6 +22327,7 @@
               "name": "My Stripe Integration",
               "provider": "stripe",
               "status": "active",
+              "monthly_spend_limit": null,
               "created_at": "2026-05-10T00:00:00Z",
               "updated_at": "2026-05-10T00:23:00Z"
             }
@@ -31014,6 +31041,7 @@
                 "oauth_status_response",
                 "stripe_publishable_key",
                 "stripe_status",
+                "openrouter_usage",
                 "healthcheck",
                 "agent_definition_config",
                 "trigger_config",
@@ -47249,6 +47277,44 @@
         ],
         "type": "object"
       },
+      "Money": {
+        "description": "A monetary amount.",
+        "properties": {
+          "amount": {
+            "description": "Decimal amount, as a string to preserve precision.",
+            "format": "decimal",
+            "type": "string"
+          },
+          "currency": {
+            "description": "Lowercase ISO 4217 currency code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "MoneyInput": {
+        "description": "A monetary amount, supplied on create and update requests.",
+        "properties": {
+          "amount": {
+            "description": "Decimal amount, as a string to preserve precision.",
+            "format": "decimal",
+            "type": "string"
+          },
+          "currency": {
+            "description": "Lowercase ISO 4217 currency code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "type": "object"
+      },
       "MuteConversationRequest": {
         "description": "Request to mute a conversation for the caller.",
         "example": {
@@ -48119,6 +48185,127 @@
           "oee_pct",
           "measurement_status",
           "downtime_event_count"
+        ],
+        "type": "object"
+      },
+      "OpenRouterUsage": {
+        "description": "What an account has spent through its OpenRouter integration.\n\nSpend comes from OpenRouter and covers every request made with the integration's API key, including any made outside OpenMRP. Days, weeks and months are UTC calendar periods.",
+        "example": {
+          "object": "openrouter_usage",
+          "spent_today": {
+            "amount": "1.25",
+            "currency": "usd"
+          },
+          "spent_this_week": {
+            "amount": "8.4",
+            "currency": "usd"
+          },
+          "spent_this_month": {
+            "amount": "31.9",
+            "currency": "usd"
+          },
+          "spent_total": {
+            "amount": "212.6",
+            "currency": "usd"
+          },
+          "monthly_spend_limit": {
+            "amount": "100",
+            "currency": "usd"
+          },
+          "monthly_spend_remaining": {
+            "amount": "68.1",
+            "currency": "usd"
+          },
+          "key_limit": null,
+          "key_limit_remaining": null
+        },
+        "properties": {
+          "object": {
+            "description": "Resource type identifier.",
+            "enum": [
+              "openrouter_usage"
+            ],
+            "type": "string"
+          },
+          "spent_today": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "Spent today."
+          },
+          "spent_this_week": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "Spent this week."
+          },
+          "spent_this_month": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "Spent this month, which is what `monthly_spend_limit` is measured against."
+          },
+          "spent_total": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "Spent since the API key was created."
+          },
+          "monthly_spend_limit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "The integration's monthly spend limit, or `null` for no limit.",
+            "nullable": true
+          },
+          "monthly_spend_remaining": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "What is left of `monthly_spend_limit` this month, never below zero, or `null` when there is no limit.",
+            "nullable": true
+          },
+          "key_limit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "The credit limit set on the API key in OpenRouter itself, or `null` when the key has none.",
+            "nullable": true
+          },
+          "key_limit_remaining": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "description": "What is left of `key_limit`, or `null` when the key has no limit.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "object",
+          "spent_today",
+          "spent_this_week",
+          "spent_this_month",
+          "spent_total",
+          "monthly_spend_limit",
+          "monthly_spend_remaining",
+          "key_limit",
+          "key_limit_remaining"
         ],
         "type": "object"
       },
@@ -76419,6 +76606,7 @@
               "oauth_status_response",
               "stripe_publishable_key",
               "stripe_status",
+              "openrouter_usage",
               "healthcheck",
               "agent_definition_config",
               "trigger_config",
@@ -76821,6 +77009,7 @@
               "oauth_status_response",
               "stripe_publishable_key",
               "stripe_status",
+              "openrouter_usage",
               "healthcheck",
               "agent_definition_config",
               "trigger_config",
@@ -78344,6 +78533,15 @@
               "inactive"
             ],
             "type": "string"
+          },
+          "monthly_spend_limit": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MoneyInput"
+              }
+            ],
+            "description": "Most the provider may spend for the account in a UTC calendar month, or `null` to remove the limit. Only `openrouter` takes a limit, in `usd`.",
+            "nullable": true
           }
         },
         "type": "object"
@@ -82043,7 +82241,7 @@
   "info": {
     "description": "API for OpenMRP services",
     "title": "OpenMRP API",
-    "version": "1.0.forge-preview.9"
+    "version": "1.0.forge-preview.10"
   },
   "openapi": "3.0.0",
   "paths": {
@@ -102664,6 +102862,7 @@
                   "oauth_status_response",
                   "stripe_publishable_key",
                   "stripe_status",
+                  "openrouter_usage",
                   "healthcheck",
                   "agent_definition_config",
                   "trigger_config",
@@ -103004,6 +103203,7 @@
                 "oauth_status_response",
                 "stripe_publishable_key",
                 "stripe_status",
+                "openrouter_usage",
                 "healthcheck",
                 "agent_definition_config",
                 "trigger_config",
@@ -105717,6 +105917,7 @@
                   "oauth_status_response",
                   "stripe_publishable_key",
                   "stripe_status",
+                  "openrouter_usage",
                   "healthcheck",
                   "agent_definition_config",
                   "trigger_config",
@@ -109405,7 +109606,7 @@
             }
           },
           {
-            "description": "Restrict to conversations attached to a business record of this type, together with `topic_resource_id`.\n\nMatches both conversations anchored to the record and conversations that merely link it, which is what powers the \"discussions on this record\" view.",
+            "description": "Restrict to conversations attached to a business record of this type, together with `topic_resource_id`.\n\nMatches both conversations anchored to the record and conversations that merely link it, which is what powers the \"discussions on this record\" view.\n\nA `conversation` or `agent_definition` anchor is personal: only conversations you take part in are returned, which lists the topics started from a conversation or your own chats with an agent.",
             "example": "sales_order",
             "in": "query",
             "name": "topic_resource_type",
@@ -109595,6 +109796,7 @@
                 "oauth_status_response",
                 "stripe_publishable_key",
                 "stripe_status",
+                "openrouter_usage",
                 "healthcheck",
                 "agent_definition_config",
                 "trigger_config",
@@ -170088,6 +170290,7 @@
                       "name": "My Stripe Integration",
                       "provider": "stripe",
                       "status": "active",
+                      "monthly_spend_limit": null,
                       "created_at": "2026-05-10T00:00:00Z",
                       "updated_at": "2026-05-10T00:23:00Z"
                     }
@@ -170145,6 +170348,7 @@
                   "name": "My Stripe Integration",
                   "provider": "stripe",
                   "status": "active",
+                  "monthly_spend_limit": null,
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
@@ -170167,6 +170371,68 @@
           }
         },
         "summary": "Create Account Integration",
+        "tags": [
+          "Account Integrations"
+        ],
+        "x-preview": true
+      }
+    },
+    "/v1/settings/integrations/openrouter/usage": {
+      "get": {
+        "description": "Returns what the account has spent through its OpenRouter integration today, this week, this month and in total, with its monthly spend limit.\n\nSpend is read live from OpenRouter for the integration's API key. Fails with `404` if the account has no OpenRouter integration, and with `400` if OpenRouter rejects the stored key.\n\nThis endpoint requires the `admin` role type.",
+        "operationId": "get-openrouter-usage",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "object": "openrouter_usage",
+                  "spent_today": {
+                    "amount": "1.25",
+                    "currency": "usd"
+                  },
+                  "spent_this_week": {
+                    "amount": "8.4",
+                    "currency": "usd"
+                  },
+                  "spent_this_month": {
+                    "amount": "31.9",
+                    "currency": "usd"
+                  },
+                  "spent_total": {
+                    "amount": "212.6",
+                    "currency": "usd"
+                  },
+                  "monthly_spend_limit": {
+                    "amount": "100",
+                    "currency": "usd"
+                  },
+                  "monthly_spend_remaining": {
+                    "amount": "68.1",
+                    "currency": "usd"
+                  },
+                  "key_limit": null,
+                  "key_limit_remaining": null
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/OpenRouterUsage"
+                }
+              }
+            },
+            "description": "Successful response for Get OpenRouter Usage"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIErrorResponse"
+                }
+              }
+            },
+            "description": "Error response"
+          }
+        },
+        "summary": "Get OpenRouter Usage",
         "tags": [
           "Account Integrations"
         ],
@@ -170199,6 +170465,7 @@
                   "name": "My Stripe Integration",
                   "provider": "stripe",
                   "status": "active",
+                  "monthly_spend_limit": null,
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
@@ -170227,7 +170494,7 @@
         "x-preview": true
       },
       "put": {
-        "description": "Renames an account integration, or activates or deactivates it.\n\nOmitted fields are left unchanged. Credentials cannot be changed here; to rotate them, call Create Account Integration again with the same `provider`.\n\nThis endpoint requires the `admin` role type.",
+        "description": "Renames an account integration, activates or deactivates it, or changes its monthly spend limit.\n\nOmitted fields are left unchanged. Credentials cannot be changed here; to rotate them, call Create Account Integration again with the same `provider`.\n\nThis endpoint requires the `admin` role type.",
         "operationId": "update-account-integration",
         "parameters": [
           {
@@ -170265,6 +170532,7 @@
                   "name": "My Stripe Integration",
                   "provider": "stripe",
                   "status": "active",
+                  "monthly_spend_limit": null,
                   "created_at": "2026-05-10T00:00:00Z",
                   "updated_at": "2026-05-10T00:23:00Z"
                 },
