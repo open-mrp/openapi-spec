@@ -78698,11 +78698,13 @@
             "type": "string"
           },
           "state": {
-            "description": "State or administrative area.\n\nSend an empty string to clear.",
+            "description": "State or administrative area.\n\nSend `null` or an empty string to clear.",
+            "nullable": true,
             "type": "string"
           },
           "postal_code": {
-            "description": "Postal or ZIP code.\n\nSend an empty string to clear.",
+            "description": "Postal or ZIP code.\n\nSend `null` or an empty string to clear.",
+            "nullable": true,
             "type": "string"
           },
           "country": {
@@ -81580,11 +81582,11 @@
             "type": "string"
           },
           "state": {
-            "description": "State or administrative area.",
+            "description": "State or administrative area. Empty for an address without one.",
             "type": "string"
           },
           "postal_code": {
-            "description": "Postal or ZIP code.",
+            "description": "Postal or ZIP code. Empty for an address without one.",
             "type": "string"
           },
           "country": {
