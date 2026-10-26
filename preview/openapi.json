@@ -19074,7 +19074,7 @@
         "type": "object"
       },
       "InlineAddressInput": {
-        "description": "An address saved together with the record that uses it, under that record's own permission.\n\nWithout `id`, a new address is created from these fields, so `name` and `country` are required. With `id`, that saved address is updated: omitted fields are left unchanged, and `null` clears `phone`, `email`, `receive_calendar_id` or `street_line_2`. The address must already belong to the account the record saves it in.",
+        "description": "An address saved together with the record that uses it, under that record's own permission.\n\nWithout `id`, a new address is created from these fields, so `name` and `country` are required. With `id`, that saved address is updated: omitted fields are left unchanged, `null` clears `phone`, `email`, `receive_calendar_id` or `street_line_2`, and an empty string clears `state` or `postal_code`. The address must already belong to the account the record saves it in.",
         "example": {
           "name": "Receiving dock",
           "type": "standard",
@@ -19130,11 +19130,11 @@
             "type": "string"
           },
           "state": {
-            "description": "State or administrative area.",
+            "description": "State or administrative area.\n\nSend an empty string to clear.",
             "type": "string"
           },
           "postal_code": {
-            "description": "Postal or ZIP code.",
+            "description": "Postal or ZIP code.\n\nSend an empty string to clear.",
             "type": "string"
           },
           "country": {
@@ -78698,11 +78698,11 @@
             "type": "string"
           },
           "state": {
-            "description": "State or administrative area.",
+            "description": "State or administrative area.\n\nSend an empty string to clear.",
             "type": "string"
           },
           "postal_code": {
-            "description": "Postal or ZIP code.",
+            "description": "Postal or ZIP code.\n\nSend an empty string to clear.",
             "type": "string"
           },
           "country": {
@@ -79826,7 +79826,7 @@
             "type": "integer"
           },
           "machine_id": {
-            "description": "ID of the machine to move the campaign to.",
+            "description": "ID of the machine to move the campaign to.\n\nThe campaign takes on that machine's production step, so a release issues its batches on the step the new machine runs. Batches already released for the campaign move to the new machine with it, and the moved campaign is kept on that machine when the version is regenerated with `preserve_manual`.",
             "type": "string"
           },
           "quantity": {
